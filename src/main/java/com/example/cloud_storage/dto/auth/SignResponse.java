@@ -1,8 +1,8 @@
-package com.example.cloud_storage.dto;
+package com.example.cloud_storage.dto.auth;
 
 import lombok.Data;
 
 @Data
-public class SignInResponse {
+public class SignResponse {
     private String username;
 }

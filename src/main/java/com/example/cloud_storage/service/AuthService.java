@@ -1,5 +1,6 @@
 package com.example.cloud_storage.service;
 
+import com.example.cloud_storage.dto.auth.SignInRequest;
 import com.example.cloud_storage.dto.auth.SignResponse;
 import com.example.cloud_storage.dto.auth.SignUpRequest;
 import com.example.cloud_storage.entity.User;
@@ -25,9 +26,17 @@ public class AuthService {
         return userMapper.toDtoResponse(user);
     }
 
+    public SignResponse login(SignInRequest signInRequest){
+        authenticate(signInRequest.getUsername(), signInRequest.getPassword());
+
+        return userMapper.toDtoResponse(signInRequest.getUsername());
+    }
+
     private void authenticate(String username, String password) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
         Authentication authentication = authenticationManager.authenticate(authToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
+
+
 }

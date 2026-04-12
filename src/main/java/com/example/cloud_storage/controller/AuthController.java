@@ -1,5 +1,6 @@
 package com.example.cloud_storage.controller;
 
+import com.example.cloud_storage.dto.auth.SignInRequest;
 import com.example.cloud_storage.dto.auth.SignResponse;
 import com.example.cloud_storage.dto.auth.SignUpRequest;
 import com.example.cloud_storage.service.AuthService;
@@ -23,4 +24,12 @@ public class AuthController {
         SignResponse signResponse = authService.register(signUpRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(signResponse);
     }
+
+    @PostMapping("/sign-in")
+    public ResponseEntity<SignResponse> signIn(@RequestBody @Valid SignInRequest signInRequest){
+        SignResponse signResponse = authService.login(signInRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(signResponse);
+    }
+
+
 }

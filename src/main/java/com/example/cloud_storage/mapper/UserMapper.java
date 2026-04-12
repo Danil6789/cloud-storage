@@ -1,5 +1,6 @@
 package com.example.cloud_storage.mapper;
 
+import com.example.cloud_storage.dto.auth.SignInRequest;
 import com.example.cloud_storage.dto.auth.SignResponse;
 import com.example.cloud_storage.dto.auth.SignUpRequest;
 import com.example.cloud_storage.entity.User;
@@ -12,4 +13,5 @@ public interface UserMapper {
     User toEntity(SignUpRequest signUpRequest);
 
     SignResponse toDtoResponse(User user);
+    SignResponse toDtoResponse(String username);
 }

@@ -1,6 +1,8 @@
 package com.example.cloud_storage.handler;
 
 import com.example.cloud_storage.dto.ErrorResponse;
+import com.example.cloud_storage.exception.UserAlreadyExistsException;
+import com.example.cloud_storage.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,5 +20,17 @@ public class GlobalHandlerException {
                 .orElse("Validation error");
 
         return new ErrorResponse(message);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleUserNotFound(UserNotFoundException ex) {
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleUserAlreadyExists(UserAlreadyExistsException ex) {
+        return new ErrorResponse(ex.getMessage());
     }
 }

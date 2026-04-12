@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalHandlerException {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {

@@ -31,5 +31,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(signResponse);
     }
 
-
+    @PostMapping("/sign-out")
+    public ResponseEntity<Void> signOut(){
+        authService.logout();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 }

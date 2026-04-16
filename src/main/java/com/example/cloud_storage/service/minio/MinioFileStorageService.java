@@ -1,5 +1,6 @@
 package com.example.cloud_storage.service.minio;
 
+import com.example.cloud_storage.exception.resource.S3OperationException;
 import io.minio.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
@@ -10,11 +11,12 @@ import com.example.cloud_storage.config.minio.MinioProperties;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import com.example.cloud_storage.dto.resource.FileInfo;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MinioFileStorageService implements FileStorageService{
+public class MinioFileStorageService implements FileStorageService {
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
@@ -38,7 +40,7 @@ public class MinioFileStorageService implements FileStorageService{
             log.info("✅ File uploaded: {}", fullPath);
         } catch (Exception e) {
             log.error("❌ Failed to upload file: {}", fullPath, e);
-            throw new RuntimeException("Failed to upload file", e);
+            throw new S3OperationException("Failed to upload file", e);
         }
     }
 
@@ -56,7 +58,7 @@ public class MinioFileStorageService implements FileStorageService{
             return stream;
         } catch (Exception e) {
             log.error("❌ Failed to download file: {}", fullPath, e);
-            throw new RuntimeException("Failed to download file", e);
+            throw new S3OperationException("Failed to download file", e);
         }
     }
 
@@ -64,7 +66,6 @@ public class MinioFileStorageService implements FileStorageService{
     public void deleteResource(Long userId, String path) {
         String fullPath = getFullPath(userId, path);
         try {
-            // Если путь заканчивается на / — это папка, удаляем всё с этим префиксом
             if (path.endsWith("/")) {
                 deleteDirectory(userId, path);
             } else {
@@ -78,13 +79,10 @@ public class MinioFileStorageService implements FileStorageService{
             }
         } catch (Exception e) {
             log.error("❌ Failed to delete resource: {}", fullPath, e);
-            throw new RuntimeException("Failed to delete resource", e);
+            throw new S3OperationException("Failed to delete resource", e);
         }
     }
 
-    /**
-     * Удалить папку (все объекты с префиксом)
-     */
     private void deleteDirectory(Long userId, String path) {
         String fullPath = getFullPath(userId, path);
         try {
@@ -108,7 +106,7 @@ public class MinioFileStorageService implements FileStorageService{
             log.info("✅ Directory deleted: {}", fullPath);
         } catch (Exception e) {
             log.error("❌ Failed to delete directory: {}", fullPath, e);
-            throw new RuntimeException("Failed to delete directory", e);
+            throw new S3OperationException("Failed to delete directory", e);
         }
     }
 
@@ -139,7 +137,7 @@ public class MinioFileStorageService implements FileStorageService{
             log.info("✅ Resource moved: {} → {}", fullFromPath, fullToPath);
         } catch (Exception e) {
             log.error("❌ Failed to move resource: {} → {}", fullFromPath, fullToPath, e);
-            throw new RuntimeException("Failed to move resource", e);
+            throw new S3OperationException("Failed to move resource", e);
         }
     }
 
@@ -165,7 +163,7 @@ public class MinioFileStorageService implements FileStorageService{
             return objects;
         } catch (Exception e) {
             log.error("❌ Failed to list directory: {}", fullPath, e);
-            throw new RuntimeException("Failed to list directory", e);
+            throw new S3OperationException("Failed to list directory", e);
         }
     }
 
@@ -188,11 +186,9 @@ public class MinioFileStorageService implements FileStorageService{
     @Override
     public void createFolder(Long userId, String path) {
         String fullPath = getFullPath(userId, path);
-        // Убедимся, что путь заканчивается на /
         String folderPath = fullPath.endsWith("/") ? fullPath : fullPath + "/";
 
         try {
-            // Создаём пустой объект с именем папки (слеш в конце)
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(minioProperties.getBucketName())
@@ -208,7 +204,90 @@ public class MinioFileStorageService implements FileStorageService{
             log.info("✅ Folder created: {}", folderPath);
         } catch (Exception e) {
             log.error("❌ Failed to create folder: {}", folderPath, e);
-            throw new RuntimeException("Failed to create folder", e);
+            throw new S3OperationException("Failed to create folder", e);
+        }
+    }
+
+    @Override
+    public Long getFileSize(Long userId, String path) {
+        String fullPath = getFullPath(userId, path);
+        try {
+            StatObjectResponse stat = minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(minioProperties.getBucketName())
+                            .object(fullPath)
+                            .build()
+            );
+            return stat.size();
+        } catch (Exception e) {
+            log.error("Failed to get file size: {}", fullPath, e);
+            throw new S3OperationException("Failed to get file size", e);
+        }
+    }
+
+    @Override
+    public List<String> listDirectoryRecursive(Long userId, String path) {
+        String fullPath = getFullPath(userId, path);
+        List<String> objects = new ArrayList<>();
+
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(minioProperties.getBucketName())
+                            .prefix(fullPath)
+                            .recursive(true)
+                            .build()
+            );
+
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                String objectName = item.objectName();
+
+                if (!objectName.endsWith("/")) {
+                    String relativePath = objectName.replace("user-" + userId + "-files/", "");
+                    objects.add(relativePath);
+                }
+            }
+
+            return objects;
+        } catch (Exception e) {
+            log.error("Failed to list directory recursively: {}", fullPath, e);
+            throw new S3OperationException("Failed to list directory", e);
+        }
+    }
+
+    @Override
+    public List<FileInfo> listAllFilesRecursive(Long userId, String path) {
+        String fullPath = getFullPath(userId, path);
+        List<FileInfo> files = new ArrayList<>();
+
+        try {
+            Iterable<Result<Item>> results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(minioProperties.getBucketName())
+                            .prefix(fullPath)
+                            .recursive(true)
+                            .build()
+            );
+
+            for (Result<Item> result : results) {
+                Item item = result.get();
+                String objectName = item.objectName();
+
+                if (!objectName.endsWith("/")) {
+                    String relativePath = objectName.replace("user-" + userId + "-files/", "");
+                    files.add(FileInfo.builder()
+                            .path(relativePath)
+                            .size(item.size())
+                            .build());
+                }
+            }
+
+            log.info("✅ Listed all files for user {}: {} items", userId, files.size());
+            return files;
+        } catch (Exception e) {
+            log.error("❌ Failed to list all files for user {}", userId, e);
+            throw new S3OperationException("Failed to list files", e);
         }
     }
 }

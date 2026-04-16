@@ -79,30 +79,30 @@
 - [✅] Создать бакет `user-files` при старте приложения (если не существует)
 
 ### 2.2 Сервис для работы с S3
-- [ ] Создать `FileStorageService` (интерфейс)
-- [ ] Реализация `MinioFileStorageService`:
+- [✅] Создать `FileStorageService` (интерфейс)
+- [✅] Реализация `MinioFileStorageService`:
     - `uploadFile(userId, path, InputStream)` → сохранить в `user-{userId}-files/{path}`
     - `downloadFile(userId, path)` → получить `InputStream`
     - `deleteResource(userId, path)` → удалить объект
     - `moveResource(userId, fromPath, toPath)` → скопировать + удалить
     - `listDirectory(userId, path)` → список объектов с префиксом
-- [ ] Обратить внимание: в S3 нет папок, использовать "префиксы" и `/` в имени
+- [✅] Обратить внимание: в S3 нет папок, использовать "префиксы" и `/` в имени
 
 ### 2.3 Модели для работы с ресурсами
-- [ ] Создать `ResourceType` (FILE, DIRECTORY)
-- [ ] Создать `ResourceDto` (path, name, size, type)
-- [ ] Создать кастомные исключения:
+- [✅] Создать `ResourceType` (FILE, DIRECTORY)
+- [✅] Создать `ResourceDto` (path, name, size, type)
+- [✅] Создать кастомные исключения:
     - `ResourceNotFoundException`
     - `ResourceAlreadyExistsException`
     - `S3OperationException`
 
 ### 2.4 Базовый REST API для файлов
-- [ ] Создать `ResourceController`:
+- [✅] Создать `ResourceController`:
     - `GET /api/resource?path=` → информация о ресурсе
     - `DELETE /api/resource?path=` → удаление
     - `GET /api/resource/download?path=` → скачивание (stream)
     - `GET /api/resource/move?from=&to=` → перемещение/переименование
-- [ ] Временно добавить заглушки для папок (отдавать пустой список)
+- [✅] Временно добавить заглушки для папок (отдавать пустой список)
 
 ---
 

@@ -1,5 +1,7 @@
 package com.example.cloud_storage.service.minio;
 
+import com.example.cloud_storage.dto.resource.FileInfo;
+
 import java.io.InputStream;
 import java.util.List;
 
@@ -18,4 +20,10 @@ public interface FileStorageService {
     boolean resourceExists(Long userId, String path);
 
     void createFolder(Long userId, String path);
+
+    Long getFileSize(Long userId, String path);
+
+    List<String> listDirectoryRecursive(Long userId, String path);
+
+    List<FileInfo> listAllFilesRecursive(Long userId, String path);
 }

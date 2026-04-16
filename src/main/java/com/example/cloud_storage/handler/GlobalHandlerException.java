@@ -1,8 +1,8 @@
 package com.example.cloud_storage.handler;
 
 import com.example.cloud_storage.dto.ErrorResponse;
-import com.example.cloud_storage.exception.UserAlreadyExistsException;
-import com.example.cloud_storage.exception.UserNotFoundException;
+import com.example.cloud_storage.exception.user.UserAlreadyExistsException;
+import com.example.cloud_storage.exception.user.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;

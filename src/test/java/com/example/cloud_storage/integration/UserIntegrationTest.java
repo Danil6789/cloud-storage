@@ -1,8 +1,8 @@
 package com.example.cloud_storage.integration;
 
 import com.example.cloud_storage.entity.User;
-import com.example.cloud_storage.exception.UserAlreadyExistsException;
-import com.example.cloud_storage.exception.UserNotFoundException;
+import com.example.cloud_storage.exception.user.UserAlreadyExistsException;
+import com.example.cloud_storage.exception.user.UserNotFoundException;
 import com.example.cloud_storage.repository.UserRepository;
 import com.example.cloud_storage.service.auth.UserService;
 import org.junit.jupiter.api.Test;

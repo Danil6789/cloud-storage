@@ -34,6 +34,4 @@ public class UserService {
         return userRepository.findByUsername(login)
                 .orElseThrow(() -> new UserNotFoundException("Нет такого username"));
     }
-
-
 }

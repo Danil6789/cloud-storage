@@ -14,8 +14,8 @@
 ## 🎯 Milestone 1: Базовая инфраструктура (Docker + DB + Auth)
 
 ### 1.1 Инициализация проекта
-- [ ] Создать Spring Boot проект через https://start.spring.io/
-- [ ] Выбрать зависимости:
+- [✅] Создать Spring Boot проект через https://start.spring.io/
+- [✅] Выбрать зависимости:
     - Spring Web
     - Spring Security
     - Spring Data JPA
@@ -25,8 +25,8 @@
     - Validation
     - Testcontainers
     - Spring Boot DevTools
-- [ ] Настроить `application.yml` (профили dev, test, prod)
-- [ ] Настроить систему сборки (Maven/Gradle)
+- [✅] Настроить `application.yml` (профили dev, test, prod)
+- [✅] Настроить систему сборки (Maven/Gradle)
 
 ### 1.2 Docker Compose (локальная инфраструктура)
 - [ ] Создать `docker-compose.yml` в корне проекта
@@ -39,30 +39,30 @@
 - [ ] Проверить запуск: `docker-compose up -d`
 
 ### 1.3 Модель User + Spring Security
-- [ ] Создать Entity `User`:
+- [✅] Создать Entity `User`:
     - `id` (Long)
     - `username` (уникальный)
     - `password` (хеш)
-- [ ] Создать `UserRepository` (Spring Data JPA)
-- [ ] Создать `UserDetailsServiceImpl` (интеграция с Spring Security)
-- [ ] Настроить `SecurityConfig`:
+- [✅] Создать `UserRepository` (Spring Data JPA)
+- [✅] Создать `UserDetailsServiceImpl` (интеграция с Spring Security)
+- [✅] Настроить `SecurityConfig`:
     - `BCryptPasswordEncoder`
     - Цепочка фильтров (пока отключить CSRF, разрешить `/api/auth/**`)
     - Сессия: `SessionCreationPolicy.IF_REQUIRED` (Spring Session будет управлять)
 
 ### 1.4 Регистрация и авторизация (RPC API)
-- [ ] Создать пакет `controller.api.auth`
-- [ ] Создать DTO: `SignUpRequest`, `SignInRequest`
-- [ ] Создать `AuthController`:
+- [✅] Создать пакет `controller.api.auth`
+- [✅] Создать DTO: `SignUpRequest`, `SignInRequest`
+- [✅] Создать `AuthController`:
     - `POST /api/auth/sign-up` → регистрация + сразу создать сессию
     - `POST /api/auth/sign-in` → аутентификация
     - `POST /api/auth/sign-out` → логаут (инвалидация сессии)
-- [ ] Подключить `AuthenticationManager` для sign-in
-- [ ] Настроить исключения и `@ControllerAdvice` (формат ошибки из ТЗ)
+- [✅] Подключить `AuthenticationManager` для sign-in
+- [✅] Настроить исключения и `@ControllerAdvice` (формат ошибки из ТЗ)
 
 ### 1.5 Интеграционные тесты Auth
-- [ ] Настроить Testcontainers (PostgreSQL)
-- [ ] Написать тесты:
+- [✅] Настроить Testcontainers (PostgreSQL)
+- [✅] Написать тесты:
     - Успешная регистрация → запись в БД
     - Регистрация с существующим username → `409 Conflict`
     - Успешный вход → `200 OK` + кука сессии

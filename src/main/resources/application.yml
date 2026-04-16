@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: cloud-storage
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cloud_storage
+    username: postgres
+    password: admin
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+    drop-first: false
+
+
+
+server:
+  servlet:
+    context-path: /api

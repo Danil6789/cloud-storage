@@ -4,7 +4,7 @@ import com.example.cloud_storage.entity.User;
 import com.example.cloud_storage.exception.UserAlreadyExistsException;
 import com.example.cloud_storage.exception.UserNotFoundException;
 import com.example.cloud_storage.repository.UserRepository;
-import com.example.cloud_storage.service.UserService;
+import com.example.cloud_storage.service.auth.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

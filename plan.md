@@ -73,10 +73,10 @@
 ## 🎯 Milestone 2: Файловое хранилище (MinIO + S3 API)
 
 ### 2.1 Интеграция MinIO SDK
-- [ ] Добавить зависимость `minio` в `build.gradle/pom.xml`
-- [ ] Создать `MinioConfig` (бин `MinioClient`, чтение endpoint/accessKey/secretKey)
-- [ ] Создать `MinioProperties` для маппинга настроек из `application.yml`
-- [ ] Создать бакет `user-files` при старте приложения (если не существует)
+- [✅] Добавить зависимость `minio` в `build.gradle/pom.xml`
+- [✅] Создать `MinioConfig` (бин `MinioClient`, чтение endpoint/accessKey/secretKey)
+- [✅] Создать `MinioProperties` для маппинга настроек из `application.yml`
+- [✅] Создать бакет `user-files` при старте приложения (если не существует)
 
 ### 2.2 Сервис для работы с S3
 - [ ] Создать `FileStorageService` (интерфейс)

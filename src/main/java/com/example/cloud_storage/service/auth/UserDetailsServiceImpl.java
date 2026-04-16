@@ -1,4 +1,4 @@
-package com.example.cloud_storage.service;
+package com.example.cloud_storage.service.auth;
 
 import com.example.cloud_storage.dto.UserDetailsImpl;
 import com.example.cloud_storage.entity.User;

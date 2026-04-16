@@ -3,7 +3,7 @@ package com.example.cloud_storage.controller;
 import com.example.cloud_storage.dto.auth.SignInRequest;
 import com.example.cloud_storage.dto.auth.SignResponse;
 import com.example.cloud_storage.dto.auth.SignUpRequest;
-import com.example.cloud_storage.service.AuthService;
+import com.example.cloud_storage.service.auth.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

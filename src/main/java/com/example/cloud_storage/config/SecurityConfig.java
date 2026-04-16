@@ -1,6 +1,6 @@
 package com.example.cloud_storage.config;
 
-import com.example.cloud_storage.service.UserDetailsServiceImpl;
+import com.example.cloud_storage.service.auth.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -2,6 +2,7 @@ package com.example.cloud_storage.integration;
 
 import com.example.cloud_storage.entity.User;
 import com.example.cloud_storage.exception.UserAlreadyExistsException;
+import com.example.cloud_storage.exception.UserNotFoundException;
 import com.example.cloud_storage.repository.UserRepository;
 import com.example.cloud_storage.service.UserService;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,6 @@ class UserIntegrationTest {
         assertThat(createdUser).isNotNull();
         assertThat(createdUser.getId()).isNotNull();
 
-
         User foundUser = userRepository.findByUsername("bruce").orElse(null);
         assertThat(foundUser).isNotNull();
         assertThat(foundUser.getId()).isNotNull();
@@ -65,5 +65,25 @@ class UserIntegrationTest {
         assertThatThrownBy(() -> userService.createUser(user2))
                 .isInstanceOf(UserAlreadyExistsException.class)
                 .hasMessage("Пользователь с таким username уже существует");
+    }
+
+    @Test
+    void getUserByUsername_shouldReturnSavedUser(){
+        User user = new User();
+        user.setUsername("bruce");
+        user.setPassword("batman");
+        User createdUser = userService.createUser(user);
+
+        User foundUser = userService.getUserByUsername("bruce");
+
+        assertThat(foundUser).isNotNull();
+        assertThat(foundUser.getUsername()).isEqualTo(createdUser.getUsername());
+    }
+
+    @Test
+    void getUserByUsername_shouldThrowUserNotFoundException(){
+        assertThatThrownBy(() -> userService.getUserByUsername("bruce"))
+                .isInstanceOf(UserNotFoundException.class)
+                .hasMessage("Нет такого username");
     }
 }

@@ -30,8 +30,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User getUserByUsername(String login){
-        return userRepository.findByUsername(login)
+    public User getUserByUsername(String username){
+        return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("Нет такого username"));
     }
 }

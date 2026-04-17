@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import static com.example.cloud_storage.constant.ApiPath.*;
+
 import java.util.List;
 
 @Tag(name = "Resources", description = "API для работы с файлами и папками")
@@ -36,7 +38,7 @@ public interface ResourceApi {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     );
 
-    @GetMapping("/download")
+    @GetMapping(DOWNLOAD_RESOURCE)
     @Operation(summary = "Скачать ресурс", description = "Скачивает файл или папку (папка скачивается в формате ZIP)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Файл успешно скачан"),
@@ -64,7 +66,7 @@ public interface ResourceApi {
     );
 
 
-    @GetMapping("/move")
+    @GetMapping(MOVE_RESOURCE)
     @Operation(summary = "Переместить/переименовать ресурс", description = "Перемещает или переименовывает файл/папку")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Ресурс перемещён"),
@@ -79,7 +81,7 @@ public interface ResourceApi {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     );
 
-    @GetMapping("/search")
+    @GetMapping(FIND_RESOURCE)
     @Operation(summary = "Поиск ресурсов", description = "Поиск файлов по имени (без учёта регистра)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Результаты поиска"),

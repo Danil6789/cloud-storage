@@ -12,10 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import static com.example.cloud_storage.constant.ApiPath.*;
+
 @Tag(name = "Authentication", description = "API для аутентификации и регистрации")
 public interface AuthApi {
 
-    @PostMapping("/sign-up")
+    @PostMapping(AUTH_SIGN_UP_URL)
     @Operation(
             summary = "Регистрация нового пользователя",
             description = "Создаёт нового пользователя и автоматически выполняет вход. " +
@@ -29,7 +31,7 @@ public interface AuthApi {
     ResponseEntity<SignResponse> signUp(@RequestBody @Valid SignUpRequest signUpRequest);
 
 
-    @PostMapping("/sign-in")
+    @PostMapping(AUTH_SIGN_IN_URL)
     @Operation(
             summary = "Вход в систему",
             description = "Аутентификация пользователя по username и password. При успешном входе выставляется cookie сессии."
@@ -41,7 +43,7 @@ public interface AuthApi {
     })
     ResponseEntity<SignResponse> signIn(@RequestBody @Valid SignInRequest signInRequest);
 
-    @PostMapping("/sign-out")
+    @PostMapping(AUTH_SIGN_OUT_URL)
     @Operation(summary = "Выход из системы")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Успешный выход"),

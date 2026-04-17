@@ -43,18 +43,24 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
-                        .expiredUrl("/api/auth/sign-in")
+                        .expiredUrl("/auth/sign-in")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/auth/sign-up",
-                                "/api/auth/sign-in",
-                                "/"
+                                "/auth/sign-up",
+                                "/auth/sign-in",
+                                "/",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs",
+                                "/swagger-resources/**",
+                                "/webjars/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/api/auth/sign-out")
+                        .logoutUrl("/auth/sign-out")
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(204);
                             response.getWriter().flush();

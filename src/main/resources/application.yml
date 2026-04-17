@@ -20,7 +20,12 @@ minio:
   secret-key: minioadmin123
   bucket-name: user-files
 
+logging:
+  level:
+    org.springdoc: DEBUG
 
-server:
-  servlet:
-    context-path: /api
+
+
+#server:
+#  servlet:
+#    context-path: /api

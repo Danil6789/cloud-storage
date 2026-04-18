@@ -1,4 +1,4 @@
-package com.example.cloud_storage.service.minio;
+package com.example.cloud_storage.service;
 
 import com.example.cloud_storage.dto.resource.FileInfo;
 

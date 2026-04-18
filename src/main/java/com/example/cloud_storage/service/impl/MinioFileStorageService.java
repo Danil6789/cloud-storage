@@ -1,6 +1,7 @@
-package com.example.cloud_storage.service.minio;
+package com.example.cloud_storage.service.impl;
 
 import com.example.cloud_storage.exception.resource.S3OperationException;
+import com.example.cloud_storage.service.FileStorageService;
 import io.minio.*;
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;

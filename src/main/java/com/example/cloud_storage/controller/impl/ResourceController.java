@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/resource")
+@RequestMapping("api/resource")
 public class ResourceController implements ResourceApi {
     private final ResourceService resourceService;
 
@@ -48,7 +48,7 @@ public class ResourceController implements ResourceApi {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
+                .header(HttpHeaders.CONTENT_DISPOSITION, //TODO: Для создания заголовка можно воспользоватсья классом ContentDisposition
                         "attachment; filename=\"" + downloadResponse.getFileName() + "\"")
                 .body(new InputStreamResource(downloadResponse.getInputStream()));
     }

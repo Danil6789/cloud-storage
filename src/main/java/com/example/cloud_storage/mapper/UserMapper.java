@@ -11,6 +11,6 @@ import org.mapstruct.ReportingPolicy;
 public interface UserMapper {
     User toEntity(SignUpRequest signUpRequest);
 
-    SignResponse toDtoResponse(User user);
-    SignResponse toDtoResponse(String username);
+    SignResponse toResponseDto(User user);
+    SignResponse toResponseDto(String username);
 }

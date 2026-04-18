@@ -1,6 +1,6 @@
 package com.example.cloud_storage.config;
 
-import com.example.cloud_storage.service.auth.UserDetailsServiceImpl;
+import com.example.cloud_storage.service.impl.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,12 +43,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
-                        .expiredUrl("/auth/sign-in")
+                        .expiredUrl("api/auth/sign-in")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/sign-up",
-                                "/auth/sign-in",
+                                "api/auth/sign-up",
+                                "api/auth/sign-in",
                                 "/",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",

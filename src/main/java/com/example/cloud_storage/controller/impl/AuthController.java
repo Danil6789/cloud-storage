@@ -1,11 +1,10 @@
 package com.example.cloud_storage.controller.impl;
 
-import com.example.cloud_storage.controller.api.AuthApi;
+import com.example.cloud_storage.controller.AuthApi;
 import com.example.cloud_storage.dto.auth.SignInRequest;
 import com.example.cloud_storage.dto.auth.SignResponse;
 import com.example.cloud_storage.dto.auth.SignUpRequest;
 import com.example.cloud_storage.service.AuthService;
-import com.example.cloud_storage.service.impl.AuthServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

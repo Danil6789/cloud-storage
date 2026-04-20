@@ -1,7 +1,7 @@
-package com.example.cloud_storage.controller.api;
+package com.example.cloud_storage.controller;
 
 import com.example.cloud_storage.dto.UserDetailsImpl;
-import com.example.cloud_storage.dto.resource.ResourceResponse;
+import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import static com.example.cloud_storage.constant.ApiPath.*;
 
@@ -46,7 +47,7 @@ public interface ResourceApi {
             @ApiResponse(responseCode = "401", description = "Пользователь не авторизован"),
             @ApiResponse(responseCode = "404", description = "Ресурс не найден")
     })
-    ResponseEntity<InputStreamResource> downloadResource(
+    ResponseEntity<StreamingResponseBody> downloadResource(
             @RequestParam String path,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     );

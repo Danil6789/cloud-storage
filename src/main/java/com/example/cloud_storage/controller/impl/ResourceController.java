@@ -1,21 +1,19 @@
 package com.example.cloud_storage.controller.impl;
 
-import com.example.cloud_storage.controller.api.ResourceApi;
+import com.example.cloud_storage.controller.ResourceApi;
 import com.example.cloud_storage.dto.UserDetailsImpl;
-import com.example.cloud_storage.dto.resource.ResourceDownloadResponse;
-import com.example.cloud_storage.dto.resource.ResourceResponse;
+import com.example.cloud_storage.dto.resource.response.DownloadResponse;
+import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import com.example.cloud_storage.service.ResourceService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("api/resource")
 public class ResourceController implements ResourceApi {
-    private final ResourceService resourceService;
+    private final ResourceService resourceService; //TODO: Зачем тут интерфейс если всегда будет только одна реализация этого сервиса
 
     @Override
     public ResponseEntity<ResourceResponse> getInfoResource(
@@ -37,20 +35,22 @@ public class ResourceController implements ResourceApi {
     }
 
     @Override
-    public ResponseEntity<InputStreamResource> downloadResource(
+    public ResponseEntity<StreamingResponseBody> downloadResource(
             @RequestParam String path,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
         Long userId = userDetails.getId();
-        ResourceDownloadResponse downloadResponse = resourceService.downloadResource(userId, path);
+        DownloadResponse response = resourceService.downloadResource(userId, path);
+        String contentType = response.isDirectory() ? "application/zip" : "application/octet-stream";
 
-        String contentType = determineContentType(downloadResponse);
+        ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
+                .filename(response.fileName())
+                .build();
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, //TODO: Для создания заголовка можно воспользоватсья классом ContentDisposition
-                        "attachment; filename=\"" + downloadResponse.getFileName() + "\"")
-                .body(new InputStreamResource(downloadResponse.getInputStream()));
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
+                .body(response.body());
     }
 
     @Override
@@ -61,14 +61,6 @@ public class ResourceController implements ResourceApi {
         Long userId = userDetails.getId();
         resourceService.deleteResource(userId, path);
         return ResponseEntity.noContent().build();
-    }
-
-
-    private String determineContentType(ResourceDownloadResponse downloadResponse) {
-        if (downloadResponse.isDirectory()) {
-            return "application/zip";
-        }
-        return "application/octet-stream";
     }
 
     @Override
@@ -85,13 +77,12 @@ public class ResourceController implements ResourceApi {
 
     @Override
     public ResponseEntity<List<ResourceResponse>> searchResources(
-            @RequestParam String query,
+            @RequestParam @NotBlank(message = "Search query cannot be empty") String query,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
-        if (query == null || query.isBlank()) {
-            throw new IllegalArgumentException("Search query cannot be empty");
-        }
-
+//        if (query == null || query.isBlank()) {
+//            throw new IllegalArgumentException("Search query cannot be empty");
+//        }
         Long userId = userDetails.getId();
         List<ResourceResponse> results = resourceService.searchResources(userId, query);
         return ResponseEntity.ok(results);

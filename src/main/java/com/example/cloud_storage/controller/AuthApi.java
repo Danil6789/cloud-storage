@@ -1,4 +1,4 @@
-package com.example.cloud_storage.controller.api;
+package com.example.cloud_storage.controller;
 
 import com.example.cloud_storage.dto.auth.SignInRequest;
 import com.example.cloud_storage.dto.auth.SignResponse;

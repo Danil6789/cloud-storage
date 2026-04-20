@@ -1,15 +1,30 @@
-package com.example.cloud_storage.util;
+package com.example.cloud_storage.service;
 
-import lombok.experimental.UtilityClass;
+import com.example.cloud_storage.dto.UserDetailsImpl;
+import com.example.cloud_storage.exception.UnauthorizedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
 
-@UtilityClass
-public class PathUtil {
-    public static String getFullPath(Long userId, String path) {
+@Service
+public class PathService {
+//    public String getCurrentUserRootPath() { //TODO: Задуматься насчёт того чтобы передавать id в сервс
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+//        if (auth == null || !auth.isAuthenticated()) {
+//            throw new UnauthorizedException("User not authenticated");
+//        }
+//
+//        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+//
+//        return "user-" + userDetails.getId() + "-files/";
+//    }
+
+    public String getFullPath(Long userId, String path) {
         String normalizedPath = path.startsWith("/") ? path.substring(1) : path;
         return String.format("user-%d-files/%s", userId, normalizedPath);
     }
 
-    public static String extractName(String path) {
+    public String extractName(String path) {
         if (path.isEmpty()) return "";
 
         String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
@@ -18,7 +33,7 @@ public class PathUtil {
         return lastSlash == -1 ? cleanPath : cleanPath.substring(lastSlash + 1);
     }
 
-    public static String extractParentPath(String path) {
+    public String extractParentPath(String path) {
         if (path.isEmpty()) return "";
 
         String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
@@ -27,7 +42,7 @@ public class PathUtil {
         return lastSlash == -1 ? "" : cleanPath.substring(0, lastSlash + 1);
     }
 
-    public static String getRelativePath(String fullPath, String folderPath) {
+    public String getRelativePath(String fullPath, String folderPath) {
         if (fullPath == null || folderPath == null) {
             return "";
         }
@@ -40,7 +55,7 @@ public class PathUtil {
         return fullPath;
     }
 
-    //    public static String normalizePath(String path) {
+    //    public String normalizePath(String path) {
 //        if (path == null || path.isBlank()) {
 //            throw new IllegalArgumentException("Path cannot be empty");
 //        }

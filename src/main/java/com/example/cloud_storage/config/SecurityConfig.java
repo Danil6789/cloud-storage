@@ -1,32 +1,40 @@
 package com.example.cloud_storage.config;
 
-import com.example.cloud_storage.service.impl.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final UserDetailsService userDetailsService;
 
     @Bean
-    public BCryptPasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsServiceImpl);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -40,15 +48,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .securityContext(securityContext -> securityContext
+                        .securityContextRepository(new HttpSessionSecurityContextRepository())
+                        .requireExplicitSave(false)
+                )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
-                        .expiredUrl("api/auth/sign-in")
+                        .expiredUrl("/api/auth/sign-in")
                 )
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "api/auth/sign-up",
-                                "api/auth/sign-in",
+                                "/api/auth/**",
                                 "/",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
@@ -60,9 +73,13 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/auth/sign-out")
+                        .logoutUrl("/api/auth/sign-out")
                         .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(204);
+                            if (authentication == null || !authentication.isAuthenticated()) {
+                                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            } else {
+                                response.setStatus(HttpStatus.NO_CONTENT.value());
+                            }
                             response.getWriter().flush();
                         })
                         .invalidateHttpSession(true)
@@ -71,5 +88,17 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider());
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

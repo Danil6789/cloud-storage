@@ -11,10 +11,12 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import static com.example.cloud_storage.constant.ApiPath.*;
 
 @Tag(name = "Authentication", description = "API для аутентификации и регистрации")
+@RequestMapping("/api/auth")
 public interface AuthApi {
 
     @PostMapping(AUTH_SIGN_UP_URL)
@@ -29,7 +31,6 @@ public interface AuthApi {
             @ApiResponse(responseCode = "409", description = "Username уже занят")
     })
     ResponseEntity<SignResponse> signUp(@RequestBody @Valid SignUpRequest signUpRequest);
-
 
     @PostMapping(AUTH_SIGN_IN_URL)
     @Operation(

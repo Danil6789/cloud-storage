@@ -1,5 +1,6 @@
 package com.example.cloud_storage.entity;
 
+import com.example.cloud_storage.listener.UserListener;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@EntityListeners(UserListener.class)
 @Table(name = "users")
 public class User{
     @Id

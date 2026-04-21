@@ -13,6 +13,30 @@ spring:
     default-schema: public
     drop-first: false
 
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  # Redis Session конфигурация
+  session:
+    store-type: redis
+    timeout: 24h
+    redis:
+      namespace: spring:session
+      flush-mode: on-save
+
+  # Redis конфигурация
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
 
 minio:
   endpoint: http://localhost:9000
@@ -22,10 +46,20 @@ minio:
 
 logging:
   level:
-    org.springdoc: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.session: DEBUG
+    org.springframework.data.redis: DEBUG
 
+springdoc:
+  swagger-ui:
+    persist-authorization: true
+    with-credentials: true
 
-
-#server:
-#  servlet:
-#    context-path: /api
+server:
+  servlet:
+    session:
+      cookie:
+        name: SESSION
+        http-only: true
+        secure: false
+        same-site: lax

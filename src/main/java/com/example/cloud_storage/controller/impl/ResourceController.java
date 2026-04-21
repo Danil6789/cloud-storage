@@ -4,7 +4,7 @@ import com.example.cloud_storage.controller.ResourceApi;
 import com.example.cloud_storage.dto.UserDetailsImpl;
 import com.example.cloud_storage.dto.resource.response.DownloadResponse;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
-import com.example.cloud_storage.service.ResourceService;
+import com.example.cloud_storage.service.resource.ResourceService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/resource")
+
 public class ResourceController implements ResourceApi {
     private final ResourceService resourceService; //TODO: Зачем тут интерфейс если всегда будет только одна реализация этого сервиса
 
@@ -74,7 +74,6 @@ public class ResourceController implements ResourceApi {
         return ResponseEntity.ok(response);
     }
 
-
     @Override
     public ResponseEntity<List<ResourceResponse>> searchResources(
             @RequestParam @NotBlank(message = "Search query cannot be empty") String query,
@@ -91,11 +90,8 @@ public class ResourceController implements ResourceApi {
     @Override
     public ResponseEntity<List<ResourceResponse>> uploadResources(
             @RequestParam String path,
-            @Parameter(description = "Файлы для загрузки",
-                    content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE))
-            MultipartFile[] files,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
+            @RequestPart("files") MultipartFile[] files,
+            @AuthenticationPrincipal UserDetailsImpl userDetails) {
         Long userId = userDetails.getId();
 
         if (files == null || files.length == 0) {

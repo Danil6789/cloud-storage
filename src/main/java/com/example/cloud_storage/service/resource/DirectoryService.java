@@ -1,10 +1,10 @@
-package com.example.cloud_storage.service;
+package com.example.cloud_storage.service.resource;
 
 import com.example.cloud_storage.repository.S3Repository;
 import com.example.cloud_storage.util.PathUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.*;
@@ -13,10 +13,22 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DirectoryService {
     private final S3Repository s3Repository;
+
+    public void createUserDirectory(Long userId) {
+        String userFolderPath = String.format("user-%d-files/", userId);
+        if (!exists(userFolderPath)) {
+            s3Repository.createFolder(userFolderPath);
+            log.info("✅ User directory created: {}", userFolderPath);
+        } else {
+            log.debug("User directory already exists: {}", userFolderPath);
+        }
+    }
+
 
     public StreamingResponseBody downloadZip(String path) { //TODO: возможно нуждается в переделке из-за объекта-маркера
         return (OutputStream outputStream) -> {

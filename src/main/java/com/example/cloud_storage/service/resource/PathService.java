@@ -1,9 +1,5 @@
-package com.example.cloud_storage.service;
+package com.example.cloud_storage.service.resource;
 
-import com.example.cloud_storage.dto.UserDetailsImpl;
-import com.example.cloud_storage.exception.UnauthorizedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service

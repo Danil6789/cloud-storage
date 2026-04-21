@@ -6,6 +6,7 @@ import com.example.cloud_storage.dto.auth.SignUpRequest;
 import com.example.cloud_storage.entity.User;
 import com.example.cloud_storage.mapper.UserMapper;
 import com.example.cloud_storage.service.AuthService;
+import com.example.cloud_storage.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final UserMapper userMapper;
     private final AuthenticationManager authenticationManager;
 

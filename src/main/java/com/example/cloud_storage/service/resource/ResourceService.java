@@ -1,4 +1,4 @@
-package com.example.cloud_storage.service;
+package com.example.cloud_storage.service.resource;
 
 import com.example.cloud_storage.dto.resource.response.DownloadResponse;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;

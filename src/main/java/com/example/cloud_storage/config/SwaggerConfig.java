@@ -20,7 +20,7 @@ public class SwaggerConfig {
                         .description("API для облачного хранилища файлов"))
                 .servers(List.of(
                         new Server()
-                                .url("http://localhost:8080/api")
+                                .url("http://localhost:8080")
                                 .description("Local server")));
     }
 }

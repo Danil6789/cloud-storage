@@ -20,7 +20,6 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-
 public class ResourceController implements ResourceApi {
     private final ResourceService resourceService; //TODO: Зачем тут интерфейс если всегда будет только одна реализация этого сервиса
 
@@ -29,8 +28,7 @@ public class ResourceController implements ResourceApi {
             @RequestParam String path,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
-        Long userId = userDetails.getId();
-        ResourceResponse response = resourceService.getInfoResource(userId, path);
+        ResourceResponse response = resourceService.getInfoResource(userDetails.getId(), path);
         return ResponseEntity.ok(response);
     }
 
@@ -39,8 +37,7 @@ public class ResourceController implements ResourceApi {
             @RequestParam String path,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
-        Long userId = userDetails.getId();
-        DownloadResponse response = resourceService.downloadResource(userId, path);
+        DownloadResponse response = resourceService.downloadResource(userDetails.getId(), path);
         String contentType = response.isDirectory() ? "application/zip" : "application/octet-stream";
 
         ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
@@ -58,8 +55,7 @@ public class ResourceController implements ResourceApi {
             @RequestParam String path,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
-        Long userId = userDetails.getId();
-        resourceService.deleteResource(userId, path);
+        resourceService.deleteResource(userDetails.getId(), path);
         return ResponseEntity.noContent().build();
     }
 
@@ -69,8 +65,7 @@ public class ResourceController implements ResourceApi {
             @RequestParam String to,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ){
-        Long userId = userDetails.getId();
-        ResourceResponse response = resourceService.moveResource(userId, from, to);
+        ResourceResponse response = resourceService.moveResource(userDetails.getId(), from, to);
         return ResponseEntity.ok(response);
     }
 
@@ -82,8 +77,7 @@ public class ResourceController implements ResourceApi {
 //        if (query == null || query.isBlank()) {
 //            throw new IllegalArgumentException("Search query cannot be empty");
 //        }
-        Long userId = userDetails.getId();
-        List<ResourceResponse> results = resourceService.searchResources(userId, query);
+        List<ResourceResponse> results = resourceService.searchResources(userDetails.getId(), query);
         return ResponseEntity.ok(results);
     }
 
@@ -92,14 +86,13 @@ public class ResourceController implements ResourceApi {
             @RequestParam String path,
             @RequestPart("files") MultipartFile[] files,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        Long userId = userDetails.getId();
 
         if (files == null || files.length == 0) {
             throw new IllegalArgumentException("No files to upload");
         }
 
         List<MultipartFile> fileList = Arrays.asList(files);
-        List<ResourceResponse> uploaded = resourceService.uploadFiles(userId, path, fileList);
+        List<ResourceResponse> uploaded = resourceService.uploadFiles(userDetails.getId(), path, fileList);
         return ResponseEntity.status(HttpStatus.CREATED).body(uploaded);
     }
 }

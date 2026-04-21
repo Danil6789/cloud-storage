@@ -1,5 +1,12 @@
 package com.example.cloud_storage.service.resource;
 
+import com.example.cloud_storage.dto.resource.Resource;
+import com.example.cloud_storage.dto.resource.ResourceFactory;
+import com.example.cloud_storage.dto.resource.response.ResourceResponse;
+import com.example.cloud_storage.exception.resource.ResourceAlreadyExistsException;
+import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
+import com.example.cloud_storage.exception.resource.BadRequestException;
+import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
 import com.example.cloud_storage.util.PathUtil;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -18,17 +26,50 @@ import java.util.zip.ZipOutputStream;
 @RequiredArgsConstructor
 public class DirectoryService {
     private final S3Repository s3Repository;
+    private final FileService fileService;
+    private final ResourceMapper resourceMapper;
 
-    public void createUserDirectory(Long userId) {
-        String userFolderPath = String.format("user-%d-files/", userId);
-        if (!exists(userFolderPath)) {
-            s3Repository.createFolder(userFolderPath);
-            log.info("✅ User directory created: {}", userFolderPath);
-        } else {
-            log.debug("User directory already exists: {}", userFolderPath);
+    public ResourceResponse getInfoDirectory(Resource resource){ //TODO: либо сделать чтоб Resource resource передавалось как в FileService в getInfo() ну или наоборт сделать
+        return resourceMapper.toResponseDto(resource, null); //TODO: и тоже нужна проверка что файл это или папка или сделать FileResource и DirectoryResource
+    }
+
+    public ResourceResponse createDirectory(Long userId, String path){
+        String fullPath = PathUtil.getFullPath(userId, path);
+        if (!s3Repository.resourceExists(path)) {
+            s3Repository.createFolder(fullPath);
+            Resource resource = ResourceFactory.create(userId, path);
+
+            return getInfoDirectory(resource);
+        }
+        else{
+            throw new ResourceAlreadyExistsException("Такая папка уже существует");
         }
     }
 
+    public List<ResourceResponse> getDirectoryContents(Long userId, String path) {
+        String fullPath = PathUtil.getFullPath(userId, path);
+
+        if (!s3Repository.resourceExists(fullPath)) {
+            throw new ResourceNotFoundException("Папка не найдена: " + path);
+        }
+        if (!fullPath.endsWith("/")) {
+            throw new BadRequestException("Указанный путь не является папкой: " + path);
+        }
+
+        List<String> items = s3Repository.listDirectory(fullPath);
+
+        return items.stream()
+                .filter(itemKey -> !itemKey.equals(fullPath))
+                .map(itemKey -> {
+                    Resource resource = ResourceFactory.create(userId, PathUtil.getRelativePath(itemKey, fullPath));
+                    return fileService.getInfo(resource);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public void createUserDirectory(Long userId) {
+        createDirectory(userId, "");
+    }
 
     public StreamingResponseBody downloadZip(String path) { //TODO: возможно нуждается в переделке из-за объекта-маркера
         return (OutputStream outputStream) -> {
@@ -64,14 +105,10 @@ public class DirectoryService {
             if (part.isEmpty()) continue;
             current.append(part).append("/");
             String folder = current.toString();
-            if (!exists(folder)) {
+            if (!s3Repository.resourceExists(folder)) {
                 s3Repository.createFolder(folder);
             }
         }
-    }
-
-    public boolean exists(String fullPath) {
-        return s3Repository.resourceExists(fullPath);
     }
 
     public void move(String fullFromPath, String fullToPath) { //TODO: Применён паттерн Saga

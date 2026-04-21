@@ -35,11 +35,14 @@ public class ResourceServiceImpl implements ResourceService {
     private final DirectoryService directoryService; //TODO: Сделать чтоб указывался его интерфейс(надо создать его) чтоб соблюдался принцип DIP
 
     @Override
-    public ResourceResponse getInfoResource(Long userId, String path){
+    public ResourceResponse getInfoResource(Long userId, String path){//TODO: Всё таки надо сделать чтоб было разделение на FileService и DirectoryService
         Resource resource = ResourceFactory.create(userId, path);
-        Long size = resource.isDirectory() ? null : storageRepository.getFileSize(resource.fullPath());
-
-        return resourceMapper.toResponseDto(resource, size);
+        if(resource.isDirectory()){
+            return directoryService.getInfoDirectory(resource);
+        }
+        else{
+            return fileService.getInfo(resource);
+        }
     }
 
     @Override
@@ -56,7 +59,6 @@ public class ResourceServiceImpl implements ResourceService {
             return new DownloadResponse(body, fileName, false);
         }
     }
-
 
     @Override
     public void deleteResource(Long userId, String path){
@@ -139,7 +141,6 @@ public class ResourceServiceImpl implements ResourceService {
             }
 
             String fullFilePath = fullTargetPath + originalFilename;
-
 
             directoryService.ensureDirectoriesForFile(fullFilePath);
 

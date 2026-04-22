@@ -28,6 +28,7 @@ public class DirectoryService {
     private final S3Repository s3Repository;
     private final FileService fileService;
     private final ResourceMapper resourceMapper;
+    private final ResourceFactory resourceFactory;
 
     public ResourceResponse getInfoDirectory(Resource resource){ //TODO: либо сделать чтоб Resource resource передавалось как в FileService в getInfo() ну или наоборт сделать
         return resourceMapper.toResponseDto(resource, null); //TODO: и тоже нужна проверка что файл это или папка или сделать FileResource и DirectoryResource
@@ -37,7 +38,7 @@ public class DirectoryService {
         String fullPath = pathService.getFullPath(path);
         if (!exists(path)) {
             s3Repository.createDirectory(fullPath);
-            Resource resource = ResourceFactory.create(path);//TODO: переделать логику
+            Resource resource = resourceFactory.create(path);//TODO: переделать логику
 
             return getInfoDirectory(resource);
         }
@@ -65,7 +66,7 @@ public class DirectoryService {
         return items.stream()
                 .filter(itemKey -> !itemKey.equals(fullPath))
                 .map(itemKey -> {
-                    Resource resource = ResourceFactory.create(pathService.getRelativePath(itemKey, fullPath));
+                    Resource resource = resourceFactory.create(pathService.getRelativePath(itemKey, fullPath));
                     return fileService.getInfo(resource);
                 })
                 .collect(Collectors.toList());
@@ -94,17 +95,24 @@ public class DirectoryService {
     }
 
     public void delete(String fullPath) {
-        List<String> objects = s3Repository.listDirectoryRecursive(fullPath);
-        for (String obj : objects) {
-            s3Repository.deleteResource(obj);
+        if (!s3Repository.resourceExists(fullPath) &&
+                s3Repository.listDirectory(fullPath).isEmpty()) {
+            throw new ResourceNotFoundException("Папка не найдена: " + fullPath);
+        }
+
+        List<String> paths = s3Repository.listDirectoryRecursive(fullPath);
+        for (String path : paths) {
+            fileService.delete(path);
         }
     }
 
     public void ensureDirectoriesForFile(String fullFilePath) { //TODO: для создания пустых папок в котором хранится этот файл
         String parentPath = pathService.extractParentPath(fullFilePath);
+
         if (parentPath.isEmpty()) return;
         String[] parts = parentPath.split("/");
         StringBuilder current = new StringBuilder();
+
         for (String part : parts) {
             if (part.isEmpty()) continue;
             current.append(part).append("/");

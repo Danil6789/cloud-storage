@@ -2,6 +2,7 @@ package com.example.cloud_storage.service.resource;
 
 import com.example.cloud_storage.dto.resource.Resource;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
+import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,9 @@ public class FileService {
     }
 
     public void delete(String fullPath) {
+        if(!exists(fullPath)){
+            throw new ResourceNotFoundException("Такой файл не найден");
+        }
         s3Repository.deleteResource(fullPath);
     }
 

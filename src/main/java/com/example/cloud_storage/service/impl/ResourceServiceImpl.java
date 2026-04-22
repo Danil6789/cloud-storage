@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -27,6 +28,8 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 @Slf4j
 @RequiredArgsConstructor
 public class ResourceServiceImpl implements ResourceService {
+
+    private final ResourceFactory resourceFactory; //TODO: Скорее всего оно не нужно. Надо подумать как убрать
     private final PathService pathService;
     private final S3Repository storageRepository; //TODO: Сделать так чтоб вызывалось только в fileService и directoryService
     private final ResourceMapper resourceMapper;
@@ -35,7 +38,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public ResourceResponse getInfoResource(String path){//TODO: Всё таки надо сделать чтоб было разделение на FileService и DirectoryService
-        Resource resource = ResourceFactory.create(path);
+        if(!storageRepository.resourceExists(pathService.getFullPath(path))){
+            throw new ResourceNotFoundException("Такого ресурса нет");
+        }
+        Resource resource = resourceFactory.create(path);
         if(resource.isDirectory()){
             return directoryService.getInfoDirectory(resource);
         }
@@ -44,7 +50,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public DownloadResponse downloadResource(String path) {
-        Resource resource = ResourceFactory.create(path);
+        Resource resource = resourceFactory.create(path);
         String fileName = resource.name();
 
         if (resource.isDirectory()) {
@@ -59,7 +65,7 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public void deleteResource(String path){
-        Resource resource = ResourceFactory.create(path);
+        Resource resource = resourceFactory.create(path);
         if (resource.isDirectory()) {
             directoryService.delete(resource.fullPath());
         } else {
@@ -69,10 +75,10 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public ResourceResponse moveResource(String fromPath, String toPath) {
-        Resource resource = ResourceFactory.create(fromPath);
+        Resource resource = resourceFactory.create(fromPath); //TODO: например тут я беру только fromPath почемуто
 
-        String fullFrom = resource.fullPath();
-        String fullTo = pathService.getFullPath(toPath);
+        String fullFrom = resource.fullPath(); //TODO: тут делаю через resource
+        String fullTo = pathService.getFullPath(toPath); //TODO: тут через сервис уже
 
         if (!storageRepository.resourceExists(fullFrom)) { //TODO: Определиться что вызывать DirectoryService или FileService
             throw new ResourceNotFoundException("Source not found: " + fromPath);
@@ -119,6 +125,7 @@ public class ResourceServiceImpl implements ResourceService {
                 results.add(response);
             }
         }
+
         return results;
     }
 
@@ -143,7 +150,7 @@ public class ResourceServiceImpl implements ResourceService {
 
             fileService.upload(fullFilePath, file);
 
-            Resource resource = ResourceFactory.create(fullFilePath);
+            Resource resource = resourceFactory.create(fullFilePath);
 
             ResourceResponse response = resourceMapper.toResponseDto(resource, file.getSize());
             responses.add(response);
@@ -151,4 +158,15 @@ public class ResourceServiceImpl implements ResourceService {
 
         return responses;
     }
+
+
+//    public void validatePath(String path) { //TODO: Валидация пути path выброс ошибки - 400
+//        if (path == null || path.isBlank()) {
+//            throw new BadRequestException("Path cannot be empty");
+//        }
+//        if (path.contains("..")) {
+//            throw new BadRequestException("Invalid path: contains '..'");
+//        }
+//    }
+
 }

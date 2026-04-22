@@ -1,5 +1,6 @@
 package com.example.cloud_storage.controller;
 
+import com.example.cloud_storage.annotation.ValidPath;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -8,8 +9,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -31,7 +34,7 @@ public interface ResourceApi {
             @ApiResponse(responseCode = "404", description = "Ресурс не найден")
     })
     ResponseEntity<ResourceResponse> getInfoResource(
-            @RequestParam String path
+            @RequestParam @ValidPath String path
     );
 
     @GetMapping(DOWNLOAD_RESOURCE)
@@ -43,7 +46,7 @@ public interface ResourceApi {
             @ApiResponse(responseCode = "404", description = "Ресурс не найден")
     })
     ResponseEntity<StreamingResponseBody> downloadResource(
-            @RequestParam String path
+            @RequestParam @ValidPath String path
     );
 
 
@@ -56,7 +59,7 @@ public interface ResourceApi {
             @ApiResponse(responseCode = "404", description = "Ресурс не найден")
     })
     ResponseEntity<Void> deleteResource(
-            @RequestParam String path
+            @RequestParam @ValidPath String path
     );
 
 
@@ -70,8 +73,8 @@ public interface ResourceApi {
             @ApiResponse(responseCode = "409", description = "Целевой ресурс уже существует")
     })
     ResponseEntity<ResourceResponse> moveResource(
-            @RequestParam String from,
-            @RequestParam String to
+            @RequestParam @ValidPath String from,
+            @RequestParam @ValidPath String to
     );
 
     @GetMapping(FIND_RESOURCE)
@@ -82,7 +85,7 @@ public interface ResourceApi {
             @ApiResponse(responseCode = "401", description = "Пользователь не авторизован")
     })
     ResponseEntity<List<ResourceResponse>> searchResources(
-            @RequestParam String query
+            @RequestParam @ValidPath String query
     );
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -95,7 +98,7 @@ public interface ResourceApi {
             @ApiResponse(responseCode = "409", description = "Файл уже существует")
     })
     ResponseEntity<List<ResourceResponse>> uploadResources(
-            @RequestParam String path,
+            @RequestParam @ValidPath String path,
             @RequestPart("files")
             @Parameter(description = "Файлы для загрузки",
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,

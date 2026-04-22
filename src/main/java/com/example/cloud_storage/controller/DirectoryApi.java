@@ -1,12 +1,10 @@
 package com.example.cloud_storage.controller;
 
-import com.example.cloud_storage.dto.UserDetailsImpl;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,10 +23,8 @@ public interface DirectoryApi {
             @ApiResponse(responseCode = "404", description = "Папка не существует")
     })
     ResponseEntity<List<ResourceResponse>> getDirectoryContents(
-            @RequestParam String path,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @RequestParam String path
     );
-
 
     @PostMapping
     @Operation(summary = "Создать пустую папку", description = "Создаёт новую директорию по указанному пути")
@@ -40,7 +36,6 @@ public interface DirectoryApi {
             @ApiResponse(responseCode = "409", description = "Папка уже существует")
     })
     ResponseEntity<ResourceResponse> createDirectory(
-            @RequestParam String path,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @RequestParam String path
     );
 }

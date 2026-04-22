@@ -2,15 +2,17 @@ package com.example.cloud_storage.dto.resource;
 
 import com.example.cloud_storage.service.resource.PathService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import static com.example.cloud_storage.dto.resource.ResourceType.DIRECTORY;
 import static com.example.cloud_storage.dto.resource.ResourceType.FILE;
 
+@Component
 @RequiredArgsConstructor
 public class ResourceFactory {
     private final PathService pathService;
 
-    public static Resource create(String path){
+    public Resource create(String path){
         String name = pathService.extractName(path);
         String parentPath = pathService.extractParentPath(path);
         String fullPath = pathService.getFullPath(path);

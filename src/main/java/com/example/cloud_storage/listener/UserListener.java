@@ -13,7 +13,6 @@ public class UserListener {
 
     @PostPersist
     public void postPersist(User user){
-        System.out.println("мы в postPersist  в UserListener");
-        directoryService.createUserDirectory(user.getId());
+        directoryService.createUserDirectory();
     }
 }

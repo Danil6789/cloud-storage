@@ -2,7 +2,6 @@ package com.example.cloud_storage.controller.impl;
 
 
 import com.example.cloud_storage.controller.DirectoryApi;
-import com.example.cloud_storage.dto.UserDetailsImpl;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import com.example.cloud_storage.service.resource.DirectoryService;
 import lombok.RequiredArgsConstructor;
@@ -18,14 +17,14 @@ public class DirectoryController implements DirectoryApi {
     private final DirectoryService directoryService;
 
     @Override
-    public ResponseEntity<List<ResourceResponse>> getDirectoryContents(String path, UserDetailsImpl userDetails) {
-        List<ResourceResponse> contents = directoryService.getDirectoryContents(userDetails.getId(), path);
+    public ResponseEntity<List<ResourceResponse>> getDirectoryContents(String path) {
+        List<ResourceResponse> contents = directoryService.getDirectoryContents(path);
         return ResponseEntity.ok(contents);
     }
 
     @Override
-    public ResponseEntity<ResourceResponse> createDirectory(String path, UserDetailsImpl userDetails) {
-        ResourceResponse created = directoryService.createDirectory(userDetails.getId(), path);
+    public ResponseEntity<ResourceResponse> createDirectory(String path) {
+        ResourceResponse created = directoryService.createDirectory(path);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 }

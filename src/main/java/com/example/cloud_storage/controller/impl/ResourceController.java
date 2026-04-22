@@ -25,19 +25,17 @@ public class ResourceController implements ResourceApi {
 
     @Override
     public ResponseEntity<ResourceResponse> getInfoResource(
-            @RequestParam String path,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @RequestParam String path
     ){
-        ResourceResponse response = resourceService.getInfoResource(userDetails.getId(), path);
+        ResourceResponse response = resourceService.getInfoResource(path);
         return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<StreamingResponseBody> downloadResource(
-            @RequestParam String path,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @RequestParam String path
     ){
-        DownloadResponse response = resourceService.downloadResource(userDetails.getId(), path);
+        DownloadResponse response = resourceService.downloadResource(path);
         String contentType = response.isDirectory() ? "application/zip" : "application/octet-stream";
 
         ContentDisposition contentDisposition = ContentDisposition.builder("attachment")
@@ -52,47 +50,41 @@ public class ResourceController implements ResourceApi {
 
     @Override
     public ResponseEntity<Void> deleteResource(
-            @RequestParam String path,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @RequestParam String path
     ){
-        resourceService.deleteResource(userDetails.getId(), path);
+        resourceService.deleteResource(path);
         return ResponseEntity.noContent().build();
     }
 
     @Override
     public ResponseEntity<ResourceResponse> moveResource(
             @RequestParam String from,
-            @RequestParam String to,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @RequestParam String to
     ){
-        ResourceResponse response = resourceService.moveResource(userDetails.getId(), from, to);
+        ResourceResponse response = resourceService.moveResource(from, to);
         return ResponseEntity.ok(response);
     }
 
     @Override
     public ResponseEntity<List<ResourceResponse>> searchResources(
-            @RequestParam @NotBlank(message = "Search query cannot be empty") String query,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
+            @RequestParam @NotBlank(message = "Search query cannot be empty") String query
     ){
-//        if (query == null || query.isBlank()) {
-//            throw new IllegalArgumentException("Search query cannot be empty");
-//        }
-        List<ResourceResponse> results = resourceService.searchResources(userDetails.getId(), query);
+
+        List<ResourceResponse> results = resourceService.searchResources(query);
         return ResponseEntity.ok(results);
     }
 
     @Override
     public ResponseEntity<List<ResourceResponse>> uploadResources(
             @RequestParam String path,
-            @RequestPart("files") MultipartFile[] files,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @RequestPart("files") MultipartFile[] files) {
 
         if (files == null || files.length == 0) {
             throw new IllegalArgumentException("No files to upload");
         }
 
         List<MultipartFile> fileList = Arrays.asList(files);
-        List<ResourceResponse> uploaded = resourceService.uploadFiles(userDetails.getId(), path, fileList);
+        List<ResourceResponse> uploaded = resourceService.uploadFiles(path, fileList);
         return ResponseEntity.status(HttpStatus.CREATED).body(uploaded);
     }
 }

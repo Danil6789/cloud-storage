@@ -1,29 +1,26 @@
 package com.example.cloud_storage.service.resource;
 
+import com.example.cloud_storage.dto.UserDetailsImpl;
+import com.example.cloud_storage.exception.UnauthorizedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PathService {
-//    public String getCurrentUserRootPath() { //TODO: Задуматься насчёт того чтобы передавать id в сервс
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        if (auth == null || !auth.isAuthenticated()) {
-//            throw new UnauthorizedException("User not authenticated");
-//        }
-//
-//        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-//
-//        return "user-" + userDetails.getId() + "-files/";
-//    }
 
-    public String getFullPath(Long userId, String path) {
-        String normalizedPath = path.startsWith("/") ? path.substring(1) : path;
-        return String.format("user-%d-files/%s", userId, normalizedPath);
+    private static final String USER_DIR_TEMPLATE = "user-%d-files/";
+    private static final String USER_DIR_PATTERN = "^user-\\d+-files/";
+
+
+    public String getFullPath(String path) {;
+        return getCurrentUserRootPath() + path;
     }
 
     public String extractName(String path) {
         if (path.isEmpty()) return "";
 
-        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path; //TODO: Повторяющий код тут 1
         int lastSlash = cleanPath.lastIndexOf('/');
 
         return lastSlash == -1 ? cleanPath : cleanPath.substring(lastSlash + 1);
@@ -32,7 +29,7 @@ public class PathService {
     public String extractParentPath(String path) {
         if (path.isEmpty()) return "";
 
-        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path; //TODO: Повторяющий код тут 2
         int lastSlash = cleanPath.lastIndexOf('/');
 
         return lastSlash == -1 ? "" : cleanPath.substring(0, lastSlash + 1);
@@ -51,15 +48,18 @@ public class PathService {
         return fullPath;
     }
 
-    //    public String normalizePath(String path) {
-//        if (path == null || path.isBlank()) {
-//            throw new IllegalArgumentException("Path cannot be empty");
-//        }
-//
-//        if (path.equals("/")) {
-//            return "";
-//        }
-//
-//        return path.startsWith("/") ? path.substring(1) : path;
-//    }
+    public String removeUserDirPrefix(String path) {
+        return path.replaceFirst(USER_DIR_PATTERN, "");
+    }
+
+    public String getCurrentUserRootPath() { //TODO: Задуматься насчёт того чтобы передавать id в сервс
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new UnauthorizedException("User not authenticated");
+        }
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+
+        return USER_DIR_TEMPLATE.formatted(userDetails.getId());
+    }
 }

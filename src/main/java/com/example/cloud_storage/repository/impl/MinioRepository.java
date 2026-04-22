@@ -3,14 +3,19 @@ package com.example.cloud_storage.repository.impl;
 import com.example.cloud_storage.exception.resource.S3OperationException;
 import com.example.cloud_storage.repository.S3Repository;
 import com.example.cloud_storage.dto.resource.ResourceInfo;
+import com.example.cloud_storage.exception.resource.ServerIOException;
 
 import io.minio.*;
+import io.minio.errors.MinioException;
+
 import io.minio.messages.Item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import com.example.cloud_storage.config.minio.MinioProperties;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,23 +23,25 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MinioRepository implements S3Repository {
+public class MinioRepository implements S3Repository { //TODO: Возомжно нужно будет разбить(паттерн Command вроде) на класса CreateDirectoryManager DeleteManager и т д на каждое действие
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
     @Override
-    public void uploadFile(String fullPath, InputStream inputStream, long size) {
+    public void uploadFile(String fullPath, MultipartFile file) {
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(minioProperties.getBucketName())
                             .object(fullPath)
-                            .stream(inputStream, size, -1)
+                            .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType("application/octet-stream")
                             .build()
             );
-        } catch (Exception e) {
+        } catch (MinioException e) {
             throw new S3OperationException("Failed to upload file", e);
+        }catch(Exception e){
+            throw new ServerIOException("Unexpected error during upload", e);
         }
     }
 
@@ -126,7 +133,7 @@ public class MinioRepository implements S3Repository {
     }
 
     @Override
-    public void createFolder(String fullPath) {
+    public void createDirectory(String fullPath) {
         String folderPath = fullPath.endsWith("/") ? fullPath : fullPath + "/";
 
         try {

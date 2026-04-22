@@ -8,7 +8,6 @@ import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.exception.resource.BadRequestException;
 import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
-import com.example.cloud_storage.util.PathUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +24,7 @@ import java.util.zip.ZipOutputStream;
 @Service
 @RequiredArgsConstructor
 public class DirectoryService {
+    private final PathService pathService;
     private final S3Repository s3Repository;
     private final FileService fileService;
     private final ResourceMapper resourceMapper;
@@ -33,11 +33,11 @@ public class DirectoryService {
         return resourceMapper.toResponseDto(resource, null); //TODO: и тоже нужна проверка что файл это или папка или сделать FileResource и DirectoryResource
     }
 
-    public ResourceResponse createDirectory(Long userId, String path){
-        String fullPath = PathUtil.getFullPath(userId, path);
-        if (!s3Repository.resourceExists(path)) {
-            s3Repository.createFolder(fullPath);
-            Resource resource = ResourceFactory.create(userId, path);
+    public ResourceResponse createDirectory(String path){
+        String fullPath = pathService.getFullPath(path);
+        if (!exists(path)) {
+            s3Repository.createDirectory(fullPath);
+            Resource resource = ResourceFactory.create(path);//TODO: переделать логику
 
             return getInfoDirectory(resource);
         }
@@ -46,10 +46,14 @@ public class DirectoryService {
         }
     }
 
-    public List<ResourceResponse> getDirectoryContents(Long userId, String path) {
-        String fullPath = PathUtil.getFullPath(userId, path);
+    public boolean exists(String fullPath) {
+        return s3Repository.resourceExists(fullPath);
+    }
 
-        if (!s3Repository.resourceExists(fullPath)) {
+    public List<ResourceResponse> getDirectoryContents(String path) {
+        String fullPath = pathService.getFullPath(path);
+
+        if (!exists(fullPath)) {
             throw new ResourceNotFoundException("Папка не найдена: " + path);
         }
         if (!fullPath.endsWith("/")) {
@@ -61,14 +65,14 @@ public class DirectoryService {
         return items.stream()
                 .filter(itemKey -> !itemKey.equals(fullPath))
                 .map(itemKey -> {
-                    Resource resource = ResourceFactory.create(userId, PathUtil.getRelativePath(itemKey, fullPath));
+                    Resource resource = ResourceFactory.create(pathService.getRelativePath(itemKey, fullPath));
                     return fileService.getInfo(resource);
                 })
                 .collect(Collectors.toList());
     }
 
-    public void createUserDirectory(Long userId) {
-        createDirectory(userId, "");
+    public void createUserDirectory() {
+        createDirectory(pathService.getCurrentUserRootPath());
     }
 
     public StreamingResponseBody downloadZip(String path) { //TODO: возможно нуждается в переделке из-за объекта-маркера
@@ -76,7 +80,7 @@ public class DirectoryService {
             List<String> files = s3Repository.listDirectoryRecursive(path);
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
                 for (String filePath : files) {
-                    String relativePath = PathUtil.getRelativePath(filePath, path);
+                    String relativePath = pathService.getRelativePath(filePath, path);
                     zipOut.putNextEntry(new ZipEntry(relativePath));
                     try (InputStream fileStream = s3Repository.downloadFile(filePath)) {
                         fileStream.transferTo(zipOut);
@@ -96,8 +100,8 @@ public class DirectoryService {
         }
     }
 
-    public void ensureDirectoriesForFile(String fullFilePath) {
-        String parentPath = PathUtil.extractParentPath(fullFilePath);
+    public void ensureDirectoriesForFile(String fullFilePath) { //TODO: для создания пустых папок в котором хранится этот файл
+        String parentPath = pathService.extractParentPath(fullFilePath);
         if (parentPath.isEmpty()) return;
         String[] parts = parentPath.split("/");
         StringBuilder current = new StringBuilder();
@@ -105,8 +109,8 @@ public class DirectoryService {
             if (part.isEmpty()) continue;
             current.append(part).append("/");
             String folder = current.toString();
-            if (!s3Repository.resourceExists(folder)) {
-                s3Repository.createFolder(folder);
+            if (!exists(folder)) {
+                s3Repository.createDirectory(folder);
             }
         }
     }

@@ -6,13 +6,16 @@ import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 @Service
 @RequiredArgsConstructor
 public class FileService {
+    private final PathService pathService; //TODO: пока не нужно это поле???? Если так то удалить
     private final S3Repository s3Repository;
     private final ResourceMapper resourceMapper;
 
@@ -29,12 +32,16 @@ public class FileService {
         };
     }
 
+    public boolean exists(String fullPath) {
+        return s3Repository.resourceExists(fullPath);
+    }
+
     public void delete(String fullPath) {
         s3Repository.deleteResource(fullPath);
     }
 
-    public void upload(String fullPath, InputStream inputStream, long size) {
-        s3Repository.uploadFile(fullPath, inputStream, size);
+    public void upload(String fullPath, MultipartFile file) {
+        s3Repository.uploadFile(fullPath, file);
     }
 
     public void move(String fullFromPath, String fullToPath) {

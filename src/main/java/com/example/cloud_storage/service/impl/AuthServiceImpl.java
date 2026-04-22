@@ -43,12 +43,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout(){
+    public void logout(){//TODO: Мертвый код. До него запрос не дойдёт
         SecurityContextHolder.clearContext();
-//        SecurityContextHolder.clearContext(); //TODO: Вроде так надо сделать чтоб очищалось не только в потоке но и в redise
-//        HttpSession session = request.getSession(false);
-//        if (session != null) {
-//            session.invalidate();
-//        }
     }
 }

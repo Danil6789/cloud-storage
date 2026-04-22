@@ -9,14 +9,13 @@ import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
 import com.example.cloud_storage.service.resource.DirectoryService;
 import com.example.cloud_storage.service.resource.FileService;
+import com.example.cloud_storage.service.resource.PathService;
 import com.example.cloud_storage.service.resource.ResourceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.example.cloud_storage.dto.resource.ResourceInfo;
 import org.springframework.stereotype.Service;
-import com.example.cloud_storage.util.PathUtil;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,26 +27,24 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 @Slf4j
 @RequiredArgsConstructor
 public class ResourceServiceImpl implements ResourceService {
-
+    private final PathService pathService;
     private final S3Repository storageRepository; //TODO: Сделать так чтоб вызывалось только в fileService и directoryService
     private final ResourceMapper resourceMapper;
     private final FileService fileService; //TODO: Сделать чтоб указывался его интерфейс(надо создать его) чтоб соблюдался принцип DIP
     private final DirectoryService directoryService; //TODO: Сделать чтоб указывался его интерфейс(надо создать его) чтоб соблюдался принцип DIP
 
     @Override
-    public ResourceResponse getInfoResource(Long userId, String path){//TODO: Всё таки надо сделать чтоб было разделение на FileService и DirectoryService
-        Resource resource = ResourceFactory.create(userId, path);
+    public ResourceResponse getInfoResource(String path){//TODO: Всё таки надо сделать чтоб было разделение на FileService и DirectoryService
+        Resource resource = ResourceFactory.create(path);
         if(resource.isDirectory()){
             return directoryService.getInfoDirectory(resource);
         }
-        else{
-            return fileService.getInfo(resource);
-        }
+        return fileService.getInfo(resource);
     }
 
     @Override
-    public DownloadResponse downloadResource(Long userId, String path) {
-        Resource resource = ResourceFactory.create(userId, path);
+    public DownloadResponse downloadResource(String path) {
+        Resource resource = ResourceFactory.create(path);
         String fileName = resource.name();
 
         if (resource.isDirectory()) {
@@ -61,8 +58,8 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public void deleteResource(Long userId, String path){
-        Resource resource = ResourceFactory.create(userId, path);
+    public void deleteResource(String path){
+        Resource resource = ResourceFactory.create(path);
         if (resource.isDirectory()) {
             directoryService.delete(resource.fullPath());
         } else {
@@ -71,20 +68,20 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public ResourceResponse moveResource(Long userId, String fromPath, String toPath) {
-        Resource resource = ResourceFactory.create(userId, fromPath);
+    public ResourceResponse moveResource(String fromPath, String toPath) {
+        Resource resource = ResourceFactory.create(fromPath);
 
         String fullFrom = resource.fullPath();
-        String fullTo = PathUtil.getFullPath(userId, toPath);
+        String fullTo = pathService.getFullPath(toPath);
 
-        if (!storageRepository.resourceExists(fullFrom)) {
+        if (!storageRepository.resourceExists(fullFrom)) { //TODO: Определиться что вызывать DirectoryService или FileService
             throw new ResourceNotFoundException("Source not found: " + fromPath);
         }
-        if (storageRepository.resourceExists(fullTo)) {
+        if (storageRepository.resourceExists(fullTo)) {//TODO: Определиться что вызывать DirectoryService или FileService
             throw new ResourceAlreadyExistsException("Target already exists: " + toPath);
         }
-        String parentFull = PathUtil.extractParentPath(fullTo);
-        if (!parentFull.isEmpty() && !storageRepository.resourceExists(parentFull)) {
+        String parentFull = pathService.extractParentPath(fullTo);
+        if (!parentFull.isEmpty() && !storageRepository.resourceExists(parentFull)) { //TODO: Определиться что вызывать DirectoryService или FileService
             throw new ResourceNotFoundException("Parent directory not found: " + parentFull);
         }
 
@@ -94,27 +91,27 @@ public class ResourceServiceImpl implements ResourceService {
             fileService.move(fullFrom, fullTo);
         }
 
-        return getInfoResource(userId, toPath);
+        return getInfoResource(toPath);
     }
 
     @Override
-    public List<ResourceResponse> searchResources(Long userId, String query) {
+    public List<ResourceResponse> searchResources(String query) {//TODO: Класс Pattern как примере
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("Search query cannot be empty");
         }
         String normalizedQuery = query.toLowerCase();
         List<ResourceResponse> results = new ArrayList<>();
 
-        String fullPrefix = PathUtil.getFullPath(userId, "");
-        List<ResourceInfo> allObjects = storageRepository.listAllResourceRecursive(fullPrefix);
+        String fullPrefix = pathService.getCurrentUserRootPath();
+        List<ResourceInfo> allObjects = storageRepository.listAllResourceRecursive(fullPrefix); //TODO: удалить storageRespository
 
         for (ResourceInfo obj : allObjects) {
             String path = obj.path();
-            String name = PathUtil.extractName(path);
+            String name = pathService.extractName(path);
             if (name.toLowerCase().contains(normalizedQuery)) {
                 boolean isDirectory = path.endsWith("/");
                 ResourceResponse response = ResourceResponse.builder()
-                        .path(PathUtil.extractParentPath(path))
+                        .path(pathService.extractParentPath(path))
                         .name(name)
                         .size(isDirectory ? null : obj.size())
                         .type(isDirectory ? ResourceType.DIRECTORY : ResourceType.FILE)
@@ -126,12 +123,8 @@ public class ResourceServiceImpl implements ResourceService {
     }
 
     @Override
-    public List<ResourceResponse> uploadFiles(Long userId, String path, List<MultipartFile> files) {
-        String fullTargetPath = PathUtil.getFullPath(userId, path);
-
-        if (!directoryService.exists(fullTargetPath)) {
-            throw new ResourceNotFoundException("Target directory not found: " + path);
-        }
+    public List<ResourceResponse> uploadFiles(String path, List<MultipartFile> files) {
+        String fullPath = pathService.getFullPath(path);
 
         List<ResourceResponse> responses = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -140,25 +133,22 @@ public class ResourceServiceImpl implements ResourceService {
                 throw new IllegalArgumentException("File name cannot be empty");
             }
 
-            String fullFilePath = fullTargetPath + originalFilename;
+            String fullFilePath = fullPath + originalFilename;
 
-            directoryService.ensureDirectoriesForFile(fullFilePath);
+            directoryService.ensureDirectoriesForFile(fullFilePath); //TODO: для создания пустых папок в котором хранится этот файл
 
-            if (storageRepository.resourceExists(fullFilePath)) {
+            if (fileService.exists(fullFilePath)) {
                 throw new ResourceAlreadyExistsException("File already exists: " + fullFilePath);
             }
 
-            try {
-                fileService.upload(fullFilePath, file.getInputStream(), file.getSize());
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to upload file: " + originalFilename, e);
-            }
+            fileService.upload(fullFilePath, file);
 
-            Resource resource = ResourceFactory.create(userId, fullFilePath);
+            Resource resource = ResourceFactory.create(fullFilePath);
 
             ResourceResponse response = resourceMapper.toResponseDto(resource, file.getSize());
             responses.add(response);
         }
+
         return responses;
     }
 }

@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
             return userRepository.save(user);
 
         }catch(DataIntegrityViolationException e){
-            throw new UserAlreadyExistsException("Пользователь с таким username уже существует");
+            throw new UserAlreadyExistsException("Пользователь с таким username уже существует"); //TODO: Вынести сообщение в константу
         }
     }
 
@@ -35,6 +35,6 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("Нет такого username"));
+                .orElseThrow(() -> new UserNotFoundException("Нет такого username")); //TODO: Вынести сообщение в константу
     }
 }

@@ -12,7 +12,7 @@ public class PathValidator implements ConstraintValidator<ValidPath, String> {
     @Override
     public boolean isValid(String path, ConstraintValidatorContext context) {
         if (path == null
-                || path.isBlank()
+                //|| path.isBlank()
                 || path.contains("..")
                 || INVALID_CHARS_PATTERN.matcher(path).find()
                 || path.length() > 1024

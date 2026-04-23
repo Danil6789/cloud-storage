@@ -49,7 +49,6 @@ public interface ResourceApi {
             @RequestParam @ValidPath String path
     );
 
-
     @DeleteMapping
     @Operation(summary = "Удалить ресурс", description = "Удаляет файл или папку (папка удаляется рекурсивно)")
     @ApiResponses(value = {
@@ -61,7 +60,6 @@ public interface ResourceApi {
     ResponseEntity<Void> deleteResource(
             @RequestParam @ValidPath String path
     );
-
 
     @GetMapping(MOVE_RESOURCE)
     @Operation(summary = "Переместить/переименовать ресурс", description = "Перемещает или переименовывает файл/папку")

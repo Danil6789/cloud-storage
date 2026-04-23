@@ -1,11 +1,13 @@
 package com.example.cloud_storage.repository.impl;
 
+import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.exception.resource.S3OperationException;
 import com.example.cloud_storage.repository.S3Repository;
 import com.example.cloud_storage.dto.resource.ResourceInfo;
 import com.example.cloud_storage.exception.resource.ServerIOException;
 
 import io.minio.*;
+import io.minio.errors.ErrorResponseException;
 import io.minio.errors.MinioException;
 
 import io.minio.messages.Item;
@@ -23,7 +25,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MinioRepository implements S3Repository { //TODO: Возомжно нужно будет разбить(паттерн Command вроде) на класса CreateDirectoryManager DeleteManager и т д на каждое действие
+public class MinioRepository implements S3Repository {
     private final MinioClient minioClient;
     private final MinioProperties minioProperties;
 
@@ -55,13 +57,18 @@ public class MinioRepository implements S3Repository { //TODO: Возомжно 
                             .build()
             );
             return stream;
+        } catch (ErrorResponseException e) {
+            if ("NoSuchKey".equals(e.errorResponse().code())) {
+                throw new ResourceNotFoundException("File not found: " + fullPath);
+            }
+            throw new S3OperationException("Failed to download file", e);
         } catch (Exception e) {
             throw new S3OperationException("Failed to download file", e);
         }
     }
 
     @Override
-    public void deleteResource(String fullPath) { //TODO: переименовать все методы вместо resource в object (deleteObject, moveObject и т д)
+    public void delete(String fullPath) {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
@@ -75,7 +82,7 @@ public class MinioRepository implements S3Repository { //TODO: Возомжно 
     }
 
     @Override
-    public void copyResource(String fullFromPath, String fullToPath) {
+    public void copy(String fullFromPath, String fullToPath) {
         try {
             minioClient.copyObject(
                     CopyObjectArgs.builder()
@@ -109,16 +116,14 @@ public class MinioRepository implements S3Repository { //TODO: Возомжно 
                 Item item = result.get();
                 objects.add(item.objectName());
             }
-            log.info("✅ Listed directory: {} ({} items)", fullPath, objects.size());
             return objects;
         } catch (Exception e) {
-            log.error("❌ Failed to list directory: {}", fullPath, e);
             throw new S3OperationException("Failed to list directory", e);
         }
     }
 
     @Override
-    public boolean resourceExists(String fullPath) {
+    public boolean exists(String fullPath) {
         try {
             minioClient.statObject(
                     StatObjectArgs.builder()
@@ -149,9 +154,7 @@ public class MinioRepository implements S3Repository { //TODO: Возомжно 
                             }, 0, -1)
                             .build()
             );
-            log.info("✅ Folder created: {}", folderPath);
         } catch (Exception e) {
-            log.error("❌ Failed to create folder: {}", folderPath, e);
             throw new S3OperationException("Failed to create folder", e);
         }
     }
@@ -187,7 +190,7 @@ public class MinioRepository implements S3Repository { //TODO: Возомжно 
     }
 
     @Override
-    public List<ResourceInfo> listAllResourceRecursive(String fullPrefix) {
+    public List<ResourceInfo> listAllObjectsRecursive(String fullPrefix) {
         List<ResourceInfo> objects = new ArrayList<>();
         try {
             for (Result<Item> result : listObjects(fullPrefix)) {

@@ -11,13 +11,13 @@ public interface S3Repository {
 
     InputStream downloadFile(String path);
 
-    void deleteResource(String path);
+    void delete(String path);
 
-    void copyResource(String fromPath, String toPath);
+    void copy(String fromPath, String toPath);
 
     List<String> listDirectory(String path);
 
-    boolean resourceExists(String path);
+    boolean exists(String path);
 
     void createDirectory(String path);
 
@@ -25,5 +25,5 @@ public interface S3Repository {
 
     List<String> listDirectoryRecursive(String path);
 
-    List<ResourceInfo> listAllResourceRecursive(String fullPrefix);
+    List<ResourceInfo> listAllObjectsRecursive(String fullPrefix);
 }

@@ -1,7 +1,10 @@
 package com.example.cloud_storage.handler;
 
 import com.example.cloud_storage.dto.ErrorResponse;
+import com.example.cloud_storage.exception.resource.BadRequestException;
+import com.example.cloud_storage.exception.resource.ResourceAlreadyExistsException;
 import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
+import com.example.cloud_storage.exception.resource.S3OperationException;
 import com.example.cloud_storage.exception.user.UserAlreadyExistsException;
 import com.example.cloud_storage.exception.user.UserNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -15,7 +18,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalHandlerException {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ErrorResponse handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getAllErrors().stream()
                 .map(error -> error.getDefaultMessage())
                 .findFirst()
@@ -26,7 +29,7 @@ public class GlobalHandlerException {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleUserNotFound(ResourceNotFoundException ex) {
+    public ErrorResponse handleResourceNotFound(ResourceNotFoundException ex) {
         return new ErrorResponse(ex.getMessage());
     }
 
@@ -41,6 +44,26 @@ public class GlobalHandlerException {
     public ErrorResponse handleUserAlreadyExists(UserAlreadyExistsException ex) {
         return new ErrorResponse(ex.getMessage());
     }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleResourceAlreadyExists(ResourceAlreadyExistsException ex) {
+        return new ErrorResponse(ex.getMessage());
+    }
+
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleBadRequest(BadRequestException ex) {
+        return new ErrorResponse(ex.getMessage());
+    }
+
+    @ExceptionHandler(S3OperationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleS3Operation(S3OperationException ex) {
+        return new ErrorResponse(ex.getMessage());
+    }
+
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

@@ -13,6 +13,8 @@ public class PathService {
     private static final String USER_DIR_PATTERN = "^user-\\d+-files/";
 
 
+    //TODO: Сделать методя для нормализации пути и вызывать в каждом методе в PathService
+
     public String getFullPath(String path) {;
         return getCurrentUserRootPath() + path;
     }

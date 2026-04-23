@@ -8,7 +8,9 @@ import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.exception.resource.BadRequestException;
 import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
+import com.example.cloud_storage.service.BaseStorageService;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -22,33 +24,34 @@ import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class DirectoryService {
+@SuperBuilder
+public class DirectoryService extends BaseStorageService {
     private final PathService pathService;
     private final S3Repository s3Repository;
     private final FileService fileService;
     private final ResourceMapper resourceMapper;
     private final ResourceFactory resourceFactory;
 
-    public ResourceResponse getInfoDirectory(Resource resource){ //TODO: либо сделать чтоб Resource resource передавалось как в FileService в getInfo() ну или наоборт сделать
+    @Override
+    public ResourceResponse getInfo(Resource resource){
+        if(!exists(resource.fullPath())){
+            throw new ResourceNotFoundException("Такой папки нет");
+        }
+
         return resourceMapper.toResponseDto(resource, null); //TODO: и тоже нужна проверка что файл это или папка или сделать FileResource и DirectoryResource
     }
 
     public ResourceResponse createDirectory(String path){
         String fullPath = pathService.getFullPath(path);
-        if (!exists(path)) {
+        if (!exists(fullPath)) {
             s3Repository.createDirectory(fullPath);
             Resource resource = resourceFactory.create(path);//TODO: переделать логику
 
-            return getInfoDirectory(resource);
+            return getInfo(resource);
         }
         else{
             throw new ResourceAlreadyExistsException("Такая папка уже существует");
         }
-    }
-
-    public boolean exists(String fullPath) {
-        return s3Repository.resourceExists(fullPath);
     }
 
     public List<ResourceResponse> getDirectoryContents(String path) {
@@ -66,17 +69,21 @@ public class DirectoryService {
         return items.stream()
                 .filter(itemKey -> !itemKey.equals(fullPath))
                 .map(itemKey -> {
-                    Resource resource = resourceFactory.create(pathService.getRelativePath(itemKey, fullPath));
+                    Resource resource = resourceFactory.create(pathService.getRelativePath(itemKey, pathService.getCurrentUserRootPath()));
+                    if(resource.isDirectory()){
+                        return getInfo(resource);
+                    }
                     return fileService.getInfo(resource);
                 })
                 .collect(Collectors.toList());
     }
 
     public void createUserDirectory() {
-        createDirectory(pathService.getCurrentUserRootPath());
+        createDirectory("");
     }
 
-    public StreamingResponseBody downloadZip(String path) { //TODO: возможно нуждается в переделке из-за объекта-маркера
+    @Override
+    public StreamingResponseBody download(String path) { //TODO: возможно нуждается в переделке из-за объекта-маркера
         return (OutputStream outputStream) -> {
             List<String> files = s3Repository.listDirectoryRecursive(path);
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
@@ -94,8 +101,9 @@ public class DirectoryService {
         };
     }
 
+    @Override
     public void delete(String fullPath) {
-        if (!s3Repository.resourceExists(fullPath) &&
+        if (!s3Repository.exists(fullPath) &&
                 s3Repository.listDirectory(fullPath).isEmpty()) {
             throw new ResourceNotFoundException("Папка не найдена: " + fullPath);
         }
@@ -123,23 +131,24 @@ public class DirectoryService {
         }
     }
 
-    public void move(String fullFromPath, String fullToPath) { //TODO: Применён паттерн Saga
+    @Override
+    public void moveOrRename(String fullFromPath, String fullToPath) { //TODO: Применён паттерн Saga
         List<String> objects = s3Repository.listDirectoryRecursive(fullFromPath);
         List<String> copied = new ArrayList<>();
 
         try {
             for (String oldPath : objects) {
                 String newPath = oldPath.replace(fullFromPath, fullToPath);
-                s3Repository.copyResource(oldPath, newPath);
+                s3Repository.copy(oldPath, newPath);
                 copied.add(oldPath);
             }
             for (String oldPath : objects) {
-                s3Repository.deleteResource(oldPath);
+                s3Repository.delete(oldPath);
             }
         } catch (Exception e) {
             for (String oldPath : copied) {
                 String newPath = oldPath.replace(fullFromPath, fullToPath);
-                s3Repository.deleteResource(newPath);
+                s3Repository.delete(newPath);
             }
             throw new RuntimeException("Move failed, rolled back", e);
         }

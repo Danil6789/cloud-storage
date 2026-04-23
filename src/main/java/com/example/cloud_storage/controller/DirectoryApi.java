@@ -1,5 +1,6 @@
 package com.example.cloud_storage.controller;
 
+import com.example.cloud_storage.annotation.ValidPath;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,7 +24,7 @@ public interface DirectoryApi {
             @ApiResponse(responseCode = "404", description = "Папка не существует")
     })
     ResponseEntity<List<ResourceResponse>> getDirectoryContents(
-            @RequestParam String path
+            @RequestParam @ValidPath String path
     );
 
     @PostMapping
@@ -36,6 +37,6 @@ public interface DirectoryApi {
             @ApiResponse(responseCode = "409", description = "Папка уже существует")
     })
     ResponseEntity<ResourceResponse> createDirectory(
-            @RequestParam String path
+            @RequestParam @ValidPath String path
     );
 }

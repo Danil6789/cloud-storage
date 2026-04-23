@@ -4,7 +4,7 @@ import com.example.cloud_storage.annotation.ValidPath;
 import com.example.cloud_storage.controller.ResourceApi;
 import com.example.cloud_storage.dto.resource.response.DownloadResponse;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
-import com.example.cloud_storage.service.resource.ResourceService;
+import com.example.cloud_storage.service.impl.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Validated
 public class ResourceController implements ResourceApi {
-    private final ResourceService resourceService; //TODO: Зачем тут интерфейс если всегда будет только одна реализация этого сервиса
+    private final ResourceService resourceService;
 
     @Override
     public ResponseEntity<ResourceResponse> getInfoResource(
@@ -60,7 +60,7 @@ public class ResourceController implements ResourceApi {
             @RequestParam @ValidPath String from,
             @RequestParam @ValidPath String to
     ){
-        ResourceResponse response = resourceService.moveResource(from, to);
+        ResourceResponse response = resourceService.moveOrRenameResource(from, to);
         return ResponseEntity.ok(response);
     }
 

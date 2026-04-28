@@ -2,6 +2,8 @@ package com.example.cloud_storage.service.resource;
 
 import com.example.cloud_storage.dto.resource.Resource;
 import com.example.cloud_storage.dto.resource.ResourceFactory;
+import com.example.cloud_storage.dto.resource.ResourceInfo;
+import com.example.cloud_storage.dto.resource.ResourceType;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import com.example.cloud_storage.exception.resource.ResourceAlreadyExistsException;
 import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
@@ -42,9 +44,19 @@ public class DirectoryService {
         String fullPath = pathService.getFullPath(path);
         if (!s3Repository.exists(fullPath)) {
             s3Repository.createDirectory(fullPath);
-            Resource resource = resourceFactory.create(path);//TODO: переделать логику
+            Resource resource = resourceFactory.create(path);
 
             return getInfo(resource);
+        }
+        else{
+            throw new ResourceAlreadyExistsException("Такая папка уже существует");
+        }
+    }
+
+    public void createUserDirectory(Long userId) {
+        String fullPath = "user-%d-files/".formatted(userId);
+        if (!s3Repository.exists(fullPath)) {
+            s3Repository.createDirectory(fullPath);
         }
         else{
             throw new ResourceAlreadyExistsException("Такая папка уже существует");
@@ -86,17 +98,7 @@ public class DirectoryService {
         return !children.isEmpty();
     }
 
-    public void createUserDirectory(Long userId) {
-        String fullPath = "user-%d-files/".formatted(userId);
-        if (!s3Repository.exists(fullPath)) {
-            s3Repository.createDirectory(fullPath);
-        }
-        else{
-            throw new ResourceAlreadyExistsException("Такая папка уже существует");
-        }
-    }
-
-    public StreamingResponseBody download(String path) { //TODO: возможно нуждается в переделке из-за объекта-маркера
+    public StreamingResponseBody download(String path) {
         return (OutputStream outputStream) -> {
             List<String> files = s3Repository.listDirectoryRecursive(path);
             try (ZipOutputStream zipOut = new ZipOutputStream(outputStream)) {
@@ -126,7 +128,7 @@ public class DirectoryService {
         }
     }
 
-    public void ensureDirectoriesForFile(String fullFilePath) { //TODO: для создания пустых папок в котором хранится этот файл
+    public void ensureDirectoriesForFile(String fullFilePath) {
         String parentPath = pathService.extractParentPath(fullFilePath);
 
         if (parentPath.isEmpty()) return;
@@ -143,7 +145,7 @@ public class DirectoryService {
         }
     }
 
-    public void moveOrRename(String fullFromPath, String fullToPath) { //TODO: Применён паттерн Saga
+    public void moveOrRename(String fullFromPath, String fullToPath) {
         List<String> objects = s3Repository.listDirectoryRecursive(fullFromPath);
         List<String> copied = new ArrayList<>();
 

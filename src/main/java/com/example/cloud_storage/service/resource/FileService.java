@@ -17,7 +17,6 @@ import java.io.InputStream;
 @Service
 @RequiredArgsConstructor
 public class FileService {
-    private final PathService pathService;
     private final S3Repository s3Repository;
     private final ResourceMapper resourceMapper;
 

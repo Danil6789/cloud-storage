@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -24,12 +25,13 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 @RequiredArgsConstructor
 public class ResourceService {
 
-    private final ResourceFactory resourceFactory; //TODO: Скорее всего оно не нужно. Надо подумать как убрать
+    private final ResourceFactory resourceFactory;
     private final PathService pathService;
-    private final S3Repository storageRepository; //TODO: Сделать так чтоб вызывалось только в fileService и directoryService
     private final ResourceMapper resourceMapper;
-    private final FileService fileService; //TODO: Сделать чтоб указывался его интерфейс(надо создать его) чтоб соблюдался принцип DIP
-    private final DirectoryService directoryService; //TODO: Сделать чтоб указывался его интерфейс(надо создать его) чтоб соблюдался принцип DIP
+    private final FileService fileService;
+    private final DirectoryService directoryService;
+    private final SearchService searchService;
+    private final MoveOrRenameService moveOrRenameService;
 
     public ResourceResponse getInfoResource(String path){
         Resource resource = resourceFactory.create(path);
@@ -64,60 +66,13 @@ public class ResourceService {
         }
     }
 
-
-    public ResourceResponse moveOrRenameResource(String fromPath, String toPath) {
-        Resource resourceFrom = resourceFactory.create(fromPath);
-        Resource resourceTo = resourceFactory.create(toPath);
-
-        String fullFrom = resourceFrom.fullPath();
-        String fullTo = resourceTo.fullPath();
-
-        if (!storageRepository.exists(fullFrom)) { //TODO: Определиться что вызывать DirectoryService или FileService
-            throw new ResourceNotFoundException("Source not found: " + fromPath);
-        }
-        if (storageRepository.exists(fullTo)) {//TODO: Определиться что вызывать DirectoryService или FileService
-            throw new ResourceAlreadyExistsException("Target already exists: " + toPath);
-        }
-        String parentToFull = pathService.extractParentPath(fullTo);
-        if (!parentToFull.isEmpty() && !storageRepository.exists(parentToFull)) { //TODO: Определиться что вызывать DirectoryService или FileService
-            throw new ResourceNotFoundException("Parent directory not found: " + parentToFull);
-        }
-
-        if (resourceFrom.isDirectory()) {
-            directoryService.moveOrRename(fullFrom, fullTo);
-        } else {
-            fileService.moveOrRename(fullFrom, fullTo);
-        }
-
-        return getInfoResource(toPath);
+    public List<ResourceResponse> searchResources(String query) {
+        return searchService.search(query);
     }
 
-    public List<ResourceResponse> searchResources(String query) {//TODO: Класс Pattern как примере
-        if (query == null || query.isBlank()) {
-            throw new IllegalArgumentException("Search query cannot be empty");
-        }
-        String normalizedQuery = query.toLowerCase();
-        List<ResourceResponse> results = new ArrayList<>();
-
-        String fullPrefix = pathService.getCurrentUserRootPath();
-        List<ResourceInfo> allObjects = storageRepository.listAllObjectsRecursive(fullPrefix); //TODO: удалить storageRespository
-
-        for (ResourceInfo obj : allObjects) {
-            String path = obj.path();
-            String name = pathService.extractName(path);
-            if (name.toLowerCase().contains(normalizedQuery)) {
-                boolean isDirectory = path.endsWith("/");
-                ResourceResponse response = ResourceResponse.builder()
-                        .path(pathService.extractParentPath(path))
-                        .name(name)
-                        .size(isDirectory ? null : obj.size())
-                        .type(isDirectory ? ResourceType.DIRECTORY : ResourceType.FILE)
-                        .build();
-                results.add(response);
-            }
-        }
-
-        return results;
+    public ResourceResponse moveOrRenameResource(String fromPath, String toPath) {
+        moveOrRenameService.moveOrRename(fromPath, toPath);
+        return getInfoResource(toPath);
     }
 
     public List<ResourceResponse> uploadFiles(String path, List<MultipartFile> files) {
@@ -132,7 +87,7 @@ public class ResourceService {
 
             String fullFilePath = fullPath + originalFilename;
 
-            directoryService.ensureDirectoriesForFile(fullFilePath); //TODO: для создания пустых папок в котором хранится этот файл
+            directoryService.ensureDirectoriesForFile(fullFilePath);
 
             if (fileService.exists(fullFilePath)) {
                 throw new ResourceAlreadyExistsException("File already exists: " + fullFilePath);

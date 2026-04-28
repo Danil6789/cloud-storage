@@ -4,7 +4,7 @@ import com.example.cloud_storage.annotation.ValidPath;
 import com.example.cloud_storage.controller.ResourceApi;
 import com.example.cloud_storage.dto.resource.response.DownloadResponse;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
-import com.example.cloud_storage.service.impl.ResourceService;
+import com.example.cloud_storage.service.resource.ResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.validation.annotation.Validated;

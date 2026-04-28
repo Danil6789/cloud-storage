@@ -4,7 +4,7 @@ import com.example.cloud_storage.entity.User;
 import com.example.cloud_storage.exception.user.UserAlreadyExistsException;
 import com.example.cloud_storage.exception.user.UserNotFoundException;
 import com.example.cloud_storage.repository.UserRepository;
-import com.example.cloud_storage.service.impl.UserServiceImpl;
+import com.example.cloud_storage.service.auth.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +28,7 @@ class UserIntegrationTest {
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:15");
 
     @Autowired
-    private UserServiceImpl userService;
+    private UserService userService;
 
     @Autowired
     private UserRepository userRepository;

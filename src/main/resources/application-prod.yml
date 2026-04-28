@@ -1,0 +1,50 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/cloud_storage_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:admin}
+    hikari:
+      connection-timeout: 20000
+      maximum-pool-size: 10
+
+  session:
+    store-type: redis
+    timeout: 24h
+    redis:
+      namespace: spring:session
+      flush-mode: on-save
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+minio:
+  endpoint: ${MINIO_URL:http://minio:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+  bucket-name: user-files
+
+logging:
+  level:
+    root: INFO
+    com.example.cloud_storage: INFO
+    org.springframework.security: DEBUG
+    org.springframework.session: WARN
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false #TODO: потом поменять на true если хочу делать https
+
+
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:8080}
+

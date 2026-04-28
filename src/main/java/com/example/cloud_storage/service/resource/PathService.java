@@ -25,7 +25,7 @@ public class PathService {
         String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path; //TODO: Повторяющий код тут 1
         int lastSlash = cleanPath.lastIndexOf('/');
 
-        return lastSlash == -1 ? cleanPath : cleanPath.substring(lastSlash + 1);
+        return lastSlash == -1 ? path : path.substring(lastSlash + 1);
     }
 
     public String extractParentPath(String path) {
@@ -54,7 +54,7 @@ public class PathService {
         return path.replaceFirst(USER_DIR_PATTERN, "");
     }
 
-    public String getCurrentUserRootPath() { //TODO: Задуматься насчёт того чтобы передавать id в сервс
+    public String getCurrentUserRootPath() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new UnauthorizedException("User not authenticated");

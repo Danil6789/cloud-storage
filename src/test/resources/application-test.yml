@@ -13,6 +13,14 @@ spring:
       hibernate:
         format_sql: true
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.session.SessionAutoConfiguration
+    session:
+      store-type: none   # отключаем Redis-сессии
+  minio:
+    mock: true
 
 server:
   servlet:

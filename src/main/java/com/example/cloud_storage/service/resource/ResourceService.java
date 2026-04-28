@@ -1,4 +1,4 @@
-package com.example.cloud_storage.service.impl;
+package com.example.cloud_storage.service.resource;
 
 import com.example.cloud_storage.dto.resource.*;
 import com.example.cloud_storage.dto.resource.response.DownloadResponse;
@@ -7,9 +7,6 @@ import com.example.cloud_storage.exception.resource.ResourceAlreadyExistsExcepti
 import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
-import com.example.cloud_storage.service.resource.DirectoryService;
-import com.example.cloud_storage.service.resource.FileService;
-import com.example.cloud_storage.service.resource.PathService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.example.cloud_storage.dto.resource.ResourceInfo;

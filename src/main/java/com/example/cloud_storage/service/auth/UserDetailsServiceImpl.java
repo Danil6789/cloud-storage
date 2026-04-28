@@ -1,6 +1,7 @@
-package com.example.cloud_storage.service.impl;
+package com.example.cloud_storage.service.auth;
 
 import com.example.cloud_storage.dto.UserDetailsImpl;
+import com.example.cloud_storage.exception.user.UserNotFoundException;
 import com.example.cloud_storage.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +18,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
                 .map(user -> new UserDetailsImpl(user.getId(), user.getUsername(), user.getPassword()))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
     }
 }

@@ -5,9 +5,7 @@ import com.example.cloud_storage.dto.resource.response.ResourceResponse;
 import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
-import com.example.cloud_storage.service.BaseStorageService;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,13 +15,12 @@ import java.io.InputStream;
 
 @Slf4j
 @Service
-@SuperBuilder
-public class FileService extends BaseStorageService {
-    private final PathService pathService; //TODO: пока не нужно это поле???? Если так то удалить
+@RequiredArgsConstructor
+public class FileService {
+    private final PathService pathService;
     private final S3Repository s3Repository;
     private final ResourceMapper resourceMapper;
 
-    @Override
     public ResourceResponse getInfo(Resource resource){
         if(!exists(resource.fullPath())){
             throw new ResourceNotFoundException("Такого файла нет");
@@ -33,7 +30,6 @@ public class FileService extends BaseStorageService {
         return resourceMapper.toResponseDto(resource, size);
     }
 
-    @Override
     public StreamingResponseBody download(String path) {
 
         return outputStream -> {
@@ -43,7 +39,10 @@ public class FileService extends BaseStorageService {
         };
     }
 
-    @Override
+    public boolean exists(String fullPath) {
+        return s3Repository.exists(fullPath);
+    }
+
     public void delete(String fullPath) {
         if(!exists(fullPath)){
             throw new ResourceNotFoundException("Такой файл не найден");
@@ -55,7 +54,6 @@ public class FileService extends BaseStorageService {
         s3Repository.uploadFile(fullPath, file);
     }
 
-    @Override
     public void moveOrRename(String fullFromPath, String fullToPath) {
         s3Repository.copy(fullFromPath, fullToPath);
         try{

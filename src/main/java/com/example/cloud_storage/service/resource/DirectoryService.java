@@ -8,9 +8,7 @@ import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.exception.resource.BadRequestException;
 import com.example.cloud_storage.mapper.ResourceMapper;
 import com.example.cloud_storage.repository.S3Repository;
-import com.example.cloud_storage.service.BaseStorageService;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.SuperBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -24,26 +22,25 @@ import java.util.zip.ZipOutputStream;
 
 @Slf4j
 @Service
-@SuperBuilder
-public class DirectoryService extends BaseStorageService {
+@RequiredArgsConstructor
+public class DirectoryService {
     private final PathService pathService;
     private final S3Repository s3Repository;
     private final FileService fileService;
     private final ResourceMapper resourceMapper;
     private final ResourceFactory resourceFactory;
 
-    @Override
     public ResourceResponse getInfo(Resource resource){
-        if(!exists(resource.fullPath())){
+        if(!s3Repository.exists(resource.fullPath())){
             throw new ResourceNotFoundException("Такой папки нет");
         }
 
-        return resourceMapper.toResponseDto(resource, null); //TODO: и тоже нужна проверка что файл это или папка или сделать FileResource и DirectoryResource
+        return resourceMapper.toResponseDto(resource, null);
     }
 
     public ResourceResponse createDirectory(String path){
         String fullPath = pathService.getFullPath(path);
-        if (!exists(fullPath)) {
+        if (!s3Repository.exists(fullPath)) {
             s3Repository.createDirectory(fullPath);
             Resource resource = resourceFactory.create(path);//TODO: переделать логику
 
@@ -55,9 +52,13 @@ public class DirectoryService extends BaseStorageService {
     }
 
     public List<ResourceResponse> getDirectoryContents(String path) {
-        String fullPath = pathService.getFullPath(path);
+        String normalized = (path == null ? "" : path);
+        if (!normalized.isEmpty() && !normalized.endsWith("/")) {
+            normalized += "/";
+        }
+        String fullPath = pathService.getFullPath(normalized);
 
-        if (!exists(fullPath)) {
+        if (!isDirectoryExists(fullPath)) {
             throw new ResourceNotFoundException("Папка не найдена: " + path);
         }
         if (!fullPath.endsWith("/")) {
@@ -78,11 +79,23 @@ public class DirectoryService extends BaseStorageService {
                 .collect(Collectors.toList());
     }
 
-    public void createUserDirectory() {
-        createDirectory("");
+    private boolean isDirectoryExists(String fullPath) {
+        if (!fullPath.endsWith("/")) fullPath += "/";
+        if (s3Repository.exists(fullPath)) return true;
+        List<String> children = s3Repository.listDirectory(fullPath);
+        return !children.isEmpty();
     }
 
-    @Override
+    public void createUserDirectory(Long userId) {
+        String fullPath = "user-%d-files/".formatted(userId);
+        if (!s3Repository.exists(fullPath)) {
+            s3Repository.createDirectory(fullPath);
+        }
+        else{
+            throw new ResourceAlreadyExistsException("Такая папка уже существует");
+        }
+    }
+
     public StreamingResponseBody download(String path) { //TODO: возможно нуждается в переделке из-за объекта-маркера
         return (OutputStream outputStream) -> {
             List<String> files = s3Repository.listDirectoryRecursive(path);
@@ -101,7 +114,6 @@ public class DirectoryService extends BaseStorageService {
         };
     }
 
-    @Override
     public void delete(String fullPath) {
         if (!s3Repository.exists(fullPath) &&
                 s3Repository.listDirectory(fullPath).isEmpty()) {
@@ -125,13 +137,12 @@ public class DirectoryService extends BaseStorageService {
             if (part.isEmpty()) continue;
             current.append(part).append("/");
             String folder = current.toString();
-            if (!exists(folder)) {
+            if (!s3Repository.exists(folder)) {
                 s3Repository.createDirectory(folder);
             }
         }
     }
 
-    @Override
     public void moveOrRename(String fullFromPath, String fullToPath) { //TODO: Применён паттерн Saga
         List<String> objects = s3Repository.listDirectoryRecursive(fullFromPath);
         List<String> copied = new ArrayList<>();

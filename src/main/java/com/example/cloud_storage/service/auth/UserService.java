@@ -1,10 +1,9 @@
-package com.example.cloud_storage.service.impl;
+package com.example.cloud_storage.service.auth;
 
 import com.example.cloud_storage.entity.User;
 import com.example.cloud_storage.exception.user.UserAlreadyExistsException;
 import com.example.cloud_storage.exception.user.UserNotFoundException;
 import com.example.cloud_storage.repository.UserRepository;
-import com.example.cloud_storage.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,11 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Override
     @Transactional
     public User createUser(User user){
         try{
@@ -31,7 +29,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
     @Transactional(readOnly = true)
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username)

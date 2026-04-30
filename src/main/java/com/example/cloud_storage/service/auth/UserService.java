@@ -3,12 +3,14 @@ package com.example.cloud_storage.service.auth;
 import com.example.cloud_storage.entity.User;
 import com.example.cloud_storage.exception.user.UserAlreadyExistsException;
 import com.example.cloud_storage.exception.user.UserNotFoundException;
-import com.example.cloud_storage.repository.UserRepository;
+import com.example.cloud_storage.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.example.cloud_storage.constant.ExceptionMessages.USER_ALREADY_EXISTS;
 
 //TODO: реализовать через контстанту сообщение об ошибке - import static ru.masnaviev.cloudstorage.constants.ErrorMessages.USER_ALREADY_EXISTS;
 
@@ -25,7 +27,7 @@ public class UserService {
             return userRepository.save(user);
 
         }catch(DataIntegrityViolationException e){
-            throw new UserAlreadyExistsException("Пользователь с таким username уже существует"); //TODO: Вынести сообщение в константу
+            throw new UserAlreadyExistsException(USER_ALREADY_EXISTS); //TODO: Вынести сообщение в константу
         }
     }
 

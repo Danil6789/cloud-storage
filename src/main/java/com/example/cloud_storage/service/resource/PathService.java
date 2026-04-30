@@ -1,10 +1,12 @@
 package com.example.cloud_storage.service.resource;
 
-import com.example.cloud_storage.dto.UserDetailsImpl;
-import com.example.cloud_storage.exception.UnauthorizedException;
+import com.example.cloud_storage.dto.user.UserDetailsImpl;
+import com.example.cloud_storage.exception.auth.UnauthorizedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import static com.example.cloud_storage.constant.ExceptionMessages.UNAUTHORIZED;
 
 @Service
 public class PathService {
@@ -13,8 +15,6 @@ public class PathService {
     private static final String USER_DIR_PATTERN = "^user-\\d+-files/";
 
 
-    //TODO: Сделать методя для нормализации пути и вызывать в каждом методе в PathService
-
     public String getFullPath(String path) {;
         return getCurrentUserRootPath() + path;
     }
@@ -22,7 +22,7 @@ public class PathService {
     public String extractName(String path) {
         if (path.isEmpty()) return "";
 
-        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path; //TODO: Повторяющий код тут 1
+        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
         int lastSlash = cleanPath.lastIndexOf('/');
 
         return lastSlash == -1 ? path : path.substring(lastSlash + 1);
@@ -31,7 +31,7 @@ public class PathService {
     public String extractParentPath(String path) {
         if (path.isEmpty()) return "";
 
-        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path; //TODO: Повторяющий код тут 2
+        String cleanPath = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
         int lastSlash = cleanPath.lastIndexOf('/');
 
         return lastSlash == -1 ? "" : cleanPath.substring(0, lastSlash + 1);
@@ -57,7 +57,7 @@ public class PathService {
     public String getCurrentUserRootPath() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            throw new UnauthorizedException("User not authenticated");
+            throw new UnauthorizedException(UNAUTHORIZED);
         }
 
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();

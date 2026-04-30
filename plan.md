@@ -29,14 +29,14 @@
 - [✅] Настроить систему сборки (Maven/Gradle)
 
 ### 1.2 Docker Compose (локальная инфраструктура)
-- [ ] Создать `docker-compose.yml` в корне проекта
-- [ ] Добавить сервисы:
+- [✅] Создать `docker-compose.yml` в корне проекта
+- [✅] Добавить сервисы:
     - **PostgreSQL** (порт 5432)
     - **MinIO** (порты 9000, 9001)
     - **Redis** (порт 6379)
-- [ ] Настроить volumes для сохранения данных
-- [ ] Создать `.env` файл с паролями (не в коммит)
-- [ ] Проверить запуск: `docker-compose up -d`
+- [✅] Настроить volumes для сохранения данных
+- [✅] Создать `.env` файл с паролями (не в коммит)
+- [✅] Проверить запуск: `docker-compose up -d`
 
 ### 1.3 Модель User + Spring Security
 - [✅] Создать Entity `User`:
@@ -109,70 +109,70 @@
 ## 🎯 Milestone 3: Работа с папками и загрузка файлов
 
 ### 3.1 Сервис для работы с иерархией (папки)
-- [ ] Создать `DirectoryService` (бизнес-логика поверх `FileStorageService`):
+- [✅] Создать `DirectoryService` (бизнес-логика поверх `FileStorageService`):
     - `createEmptyFolder(userId, path)` → создать "пустой маркер" (например, папка как объект с `/` в конце)
     - `getDirectoryContent(userId, path)` → список ресурсов внутри
     - `validatePath(userId, path)` → проверка существования родительской папки
-- [ ] Реализовать логику: папка — это специальный объект нулевого размера с именем, заканчивающимся на `/`
+- [✅] Реализовать логику: папка — это специальный объект нулевого размера с именем, заканчивающимся на `/`
 
 ### 3.2 API для папок
-- [ ] Создать `DirectoryController`:
+- [✅] Создать `DirectoryController`:
     - `GET /api/directory?path=` → содержимое папки
     - `POST /api/directory?path=` → создать пустую папку
-- [ ] Проверить: путь к папке должен заканчиваться на `/`
+- [✅] Проверить: путь к папке должен заканчиваться на `/`
 
 ### 3.3 Загрузка файлов (Upload)
-- [ ] Реализовать `POST /api/resource?path=` (Multipart)
-- [ ] Поддержка загрузки:
+- [✅] Реализовать `POST /api/resource?path=` (Multipart)
+- [✅] Поддержка загрузки:
     - Одиночного файла
     - Вложенных папок (из `MultipartFile.getOriginalFilename()` извлекать относительный путь)
 - [ ] Логика: `path` в запросе — это целевая папка. Добавлять к ней структуру из имени файла.
 - [ ] Вернуть список загруженных ресурсов (`201 Created`)
 
 ### 3.4 Скачивание папки как ZIP
-- [ ] Модифицировать `GET /api/resource/download`:
+- [✅] Модифицировать `GET /api/resource/download`:
     - Если ресурс — папка → рекурсивно собрать все файлы → заархивировать в `ZipOutputStream`
     - Установить `Content-Type: application/zip`
-- [ ] Внимание: не загружать всё в память, использовать streaming
+- [✅] Внимание: не загружать всё в память, использовать streaming
 
 ---
 
 ## 🎯 Milestone 4: Поиск и фронтенд
 
 ### 4.1 Поиск файлов
-- [ ] Реализовать `SearchService`:
+- [✅] Реализовать `SearchService`:
     - Пройти по всем объектам пользователя в MinIO
     - Фильтровать по имени (содержит подстроку query)
     - MinIO API позволяет листинг с префиксом и рекурсивно
-- [ ] Оптимизация: пока без индексов, просто `listObjects` с рекурсивным флагом
-- [ ] Создать `GET /api/resource/search?query=`
+- [✅] Оптимизация: пока без индексов, просто `listObjects` с рекурсивным флагом
+- [✅] Создать `GET /api/resource/search?query=`
 
 ### 4.2 Интеграция React фронтенда
-- [ ] Скачать собранный фронтенд (папка `dist`) из репозитория
-- [ ] Скопировать содержимое `dist` в `src/main/resources/static`
-- [ ] Настроить Spring Boot:
+- [✅] Скачать собранный фронтенд (папка `dist`) из репозитория
+- ✅] Скопировать содержимое `dist` в `src/main/resources/static`
+- [✅] Настроить Spring Boot:
     - Отдавать `index.html` на `GET /`
     - Все не-`/api` запросы → frontend routing
-- [ ] Проверить: фронтенд обращается к `/api/*`, бэкенд отвечает
+- [✅] Проверить: фронтенд обращается к `/api/*`, бэкенд отвечает
 
 ### 4.3 CORS и настройки для фронта
-- [ ] Настроить CORS в Spring Security (разрешить с того же origin)
-- [ ] Убедиться, что кука сессии отправляется (SameSite, Secure если HTTPS)
+- [✅] Настроить CORS в Spring Security (разрешить с того же origin)
+- [✅] Убедиться, что кука сессии отправляется (SameSite, Secure если HTTPS)
 
 ---
 
 ## 🎯 Milestone 5: Сессии в Redis + полировка
 
 ### 5.1 Настройка Spring Session с Redis
-- [ ] Добавить зависимость `spring-session-data-redis`
-- [ ] Добавить конфигурацию Redis в `application.yml` (хост, порт)
-- [ ] Настроить `@EnableRedisHttpSession`:
+- [✅] Добавить зависимость `spring-session-data-redis`
+- [✅] Добавить конфигурацию Redis в `application.yml` (хост, порт)
+- [✅] Настроить `@EnableRedisHttpSession`:
     - `maxInactiveIntervalInSeconds` (например, 86400 = 1 день)
-- [ ] Проверить: после логина в Redis появляется сессия
-- [ ] Убедиться, что кука `SESSION` (или переименовать в `SESSION_ID`)
+- [✅] Проверить: после логина в Redis появляется сессия
+- [✅] Убедиться, что кука `SESSION` (или переименовать в `SESSION_ID`)
 
 ### 5.2 Интеграционные тесты с Testcontainers
-- [ ] Добавить контейнеры: PostgreSQL + MinIO + Redis
+- [] Добавить контейнеры: PostgreSQL + MinIO + Redis
 - [ ] Написать тесты для `DirectoryService`:
     - Создание папки → объект появился в MinIO
     - Загрузка файла → файл доступен для скачивания
@@ -180,36 +180,36 @@
 - [ ] Написать тесты для изоляции пользователей (пользователь A не видит файлы B)
 
 ### 5.3 Swagger документация
-- [ ] Добавить `springdoc-openapi-starter-webmvc-ui`
-- [ ] Аннотировать контроллеры: `@Operation`, `@ApiResponse`
-- [ ] Проверить `http://localhost:8080/swagger-ui.html`
+- [✅] Добавить `springdoc-openapi-starter-webmvc-ui`
+- [✅] Аннотировать контроллеры: `@Operation`, `@ApiResponse`
+- [✅] Проверить `http://localhost:8080/swagger-ui.html`
 
 ---
 
 ## 🎯 Milestone 6: Деплой на VPS
 
 ### 6.1 Подготовка к продакшну
-- [ ] Создать `application-prod.yml`:
+- [✅] Создать `application-prod.yml`:
     - Реальные URL для Postgres, Redis, MinIO
     - JWT-секреты, пароли через переменные окружения
-- [ ] Собрать JAR: `mvn clean package` или `gradle bootJar`
-- [ ] Создать `Dockerfile` для приложения (multi-stage или просто JAR + JRE)
+- [✅] Собрать JAR: `mvn clean package` или `gradle bootJar`
+- [✅] Создать `Dockerfile` для приложения (multi-stage или просто JAR + JRE)
 
 ### 6.2 Настройка сервера
-- [ ] Арендовать VPS (DigitalOcean, Hetzner, Timeweb)
-- [ ] Установить Docker и Docker Compose
-- [ ] Скопировать на сервер:
+- [✅] Арендовать VPS (DigitalOcean, Hetzner, Timeweb)
+- [✅] Установить Docker и Docker Compose
+- [✅] Скопировать на сервер:
     - `docker-compose.yml` (только Postgres, MinIO, Redis — без приложения)
     - `docker-compose.app.yml` (для самого приложения)
     - собранный JAR
 
 ### 6.3 Запуск на сервере
-- [ ] Запустить инфраструктуру: `docker-compose up -d`
-- [ ] Запустить приложение:
+- [✅] Запустить инфраструктуру: `docker-compose up -d`
+- [✅] Запустить приложение:
     - Через `java -jar app.jar --spring.profiles.active=prod`
     - Или через Docker Compose с собственным образом
-- [ ] Настроить Nginx (опционально) для проброса 80 → 8080
-- [ ] Проверить: `http://<server_ip>:8080` — работает фронтенд
+- [✅] Настроить Nginx (опционально) для проброса 80 → 8080
+- [✅] Проверить: `http://<server_ip>:8080` — работает фронтенд
 
 ---
 

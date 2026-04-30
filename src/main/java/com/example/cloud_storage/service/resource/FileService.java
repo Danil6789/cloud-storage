@@ -2,9 +2,10 @@ package com.example.cloud_storage.service.resource;
 
 import com.example.cloud_storage.dto.resource.Resource;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
+import com.example.cloud_storage.exception.resource.MoveOperationException;
 import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.mapper.ResourceMapper;
-import com.example.cloud_storage.repository.S3Repository;
+import com.example.cloud_storage.repository.resource.S3Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.io.InputStream;
+
+import static com.example.cloud_storage.constant.ExceptionMessages.MOVE_OPERATION_EXCEPTION;
+import static com.example.cloud_storage.constant.ExceptionMessages.RESOURCE_NOT_FOUND;
 
 @Slf4j
 @Service
@@ -22,7 +26,7 @@ public class FileService {
 
     public ResourceResponse getInfo(Resource resource){
         if(!exists(resource.fullPath())){
-            throw new ResourceNotFoundException("Такого файла нет");
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND);
         }
 
         Long size = s3Repository.getFileSize(resource.fullPath());
@@ -44,7 +48,7 @@ public class FileService {
 
     public void delete(String fullPath) {
         if(!exists(fullPath)){
-            throw new ResourceNotFoundException("Такой файл не найден");
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND);
         }
         s3Repository.delete(fullPath);
     }
@@ -59,7 +63,8 @@ public class FileService {
             s3Repository.delete(fullFromPath);
         }catch(Exception e){
             s3Repository.delete(fullToPath);
-            throw new RuntimeException("Move failed, rolled back", e);
+
+            throw new MoveOperationException(MOVE_OPERATION_EXCEPTION, e);
         }
     }
 }

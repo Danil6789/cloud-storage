@@ -1,6 +1,6 @@
 package com.example.cloud_storage.controller;
 
-import com.example.cloud_storage.dto.UserDetailsImpl;
+import com.example.cloud_storage.dto.user.UserDetailsImpl;
 import com.example.cloud_storage.dto.user.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

@@ -4,13 +4,16 @@ import com.example.cloud_storage.dto.resource.Resource;
 import com.example.cloud_storage.dto.resource.ResourceFactory;
 import com.example.cloud_storage.dto.resource.ResourceInfo;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
+import com.example.cloud_storage.exception.resource.BadRequestException;
 import com.example.cloud_storage.mapper.ResourceMapper;
-import com.example.cloud_storage.repository.S3Repository;
+import com.example.cloud_storage.repository.resource.S3Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.cloud_storage.constant.ExceptionMessages.BAD_REQUEST;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +25,7 @@ public class SearchService {
 
     public List<ResourceResponse> search(String query) {
         if (query == null || query.isBlank()) {
-            throw new IllegalArgumentException("Search query cannot be empty");
+            throw new BadRequestException(BAD_REQUEST);
         }
         String normalizedQuery = query.toLowerCase();
         String fullPrefix = pathService.getCurrentUserRootPath();

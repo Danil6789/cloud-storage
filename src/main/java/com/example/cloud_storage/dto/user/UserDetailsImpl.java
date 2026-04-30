@@ -1,4 +1,4 @@
-package com.example.cloud_storage.dto;
+package com.example.cloud_storage.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

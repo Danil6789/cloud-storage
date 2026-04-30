@@ -1,7 +1,7 @@
 package com.example.cloud_storage.controller.impl;
 
 import com.example.cloud_storage.controller.UserApi;
-import com.example.cloud_storage.dto.UserDetailsImpl;
+import com.example.cloud_storage.dto.user.UserDetailsImpl;
 import com.example.cloud_storage.dto.user.UserResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

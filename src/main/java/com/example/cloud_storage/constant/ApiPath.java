@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
-public class ApiPath {
+public final class ApiPath {
     public static final String AUTH_SIGN_UP_URL = "/sign-up";
     public static final String AUTH_SIGN_IN_URL = "/sign-in";
     public static final String AUTH_SIGN_OUT_URL = "/sign-out";

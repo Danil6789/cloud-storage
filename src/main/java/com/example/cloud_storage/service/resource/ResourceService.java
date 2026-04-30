@@ -3,22 +3,21 @@ package com.example.cloud_storage.service.resource;
 import com.example.cloud_storage.dto.resource.*;
 import com.example.cloud_storage.dto.resource.response.DownloadResponse;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
+import com.example.cloud_storage.exception.resource.BadRequestException;
 import com.example.cloud_storage.exception.resource.ResourceAlreadyExistsException;
-import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.mapper.ResourceMapper;
-import com.example.cloud_storage.repository.S3Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import com.example.cloud_storage.dto.resource.ResourceInfo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import static com.example.cloud_storage.constant.ExceptionMessages.BAD_REQUEST;
+import static com.example.cloud_storage.constant.ExceptionMessages.RESOURCE_ALREADY_EXISTS;
 
 @Service
 @Slf4j
@@ -38,6 +37,7 @@ public class ResourceService {
         if(resource.isDirectory()){
             return directoryService.getInfo(resource);
         }
+
         return fileService.getInfo(resource);
     }
 
@@ -82,7 +82,7 @@ public class ResourceService {
         for (MultipartFile file : files) {
             String originalFilename = file.getOriginalFilename();
             if (originalFilename == null || originalFilename.isBlank()) {
-                throw new IllegalArgumentException("File name cannot be empty");
+                throw new BadRequestException(BAD_REQUEST);
             }
 
             String fullFilePath = fullPath + originalFilename;
@@ -90,7 +90,7 @@ public class ResourceService {
             directoryService.ensureDirectoriesForFile(fullFilePath);
 
             if (fileService.exists(fullFilePath)) {
-                throw new ResourceAlreadyExistsException("File already exists: " + fullFilePath);
+                throw new ResourceAlreadyExistsException(RESOURCE_ALREADY_EXISTS + " " + fullFilePath);
             }
 
             fileService.upload(fullFilePath, file);

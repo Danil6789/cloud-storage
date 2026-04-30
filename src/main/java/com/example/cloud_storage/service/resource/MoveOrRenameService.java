@@ -4,9 +4,12 @@ import com.example.cloud_storage.dto.resource.Resource;
 import com.example.cloud_storage.dto.resource.ResourceFactory;
 import com.example.cloud_storage.exception.resource.ResourceAlreadyExistsException;
 import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
-import com.example.cloud_storage.repository.S3Repository;
+import com.example.cloud_storage.repository.resource.S3Repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import static com.example.cloud_storage.constant.ExceptionMessages.RESOURCE_ALREADY_EXISTS;
+import static com.example.cloud_storage.constant.ExceptionMessages.RESOURCE_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -25,14 +28,14 @@ public class MoveOrRenameService {
         String fullTo = resourceTo.fullPath();
 
         if (!s3Repository.exists(fullFrom)) {
-            throw new ResourceNotFoundException("Source not found: " + fromPath);
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND + " " + fromPath);
         }
         if (s3Repository.exists(fullTo)) {
-            throw new ResourceAlreadyExistsException("Target already exists: " + toPath);
+            throw new ResourceAlreadyExistsException(RESOURCE_ALREADY_EXISTS + " " + toPath);
         }
         String parentToFull = pathService.extractParentPath(fullTo);
         if (!parentToFull.isEmpty() && !s3Repository.exists(parentToFull)) {
-            throw new ResourceNotFoundException("Parent directory not found: " + parentToFull);
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND + " " + parentToFull);
         }
 
         if (resourceFrom.isDirectory()) {

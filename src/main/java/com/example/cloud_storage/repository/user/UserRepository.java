@@ -1,4 +1,4 @@
-package com.example.cloud_storage.repository;
+package com.example.cloud_storage.repository.user;
 
 import com.example.cloud_storage.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,6 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-
-    public Optional<User> findByUsername(String login);
+    Optional<User> findByUsername(String login);
 }

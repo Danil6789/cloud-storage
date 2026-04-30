@@ -2,14 +2,10 @@ package com.example.cloud_storage.service.resource;
 
 import com.example.cloud_storage.dto.resource.Resource;
 import com.example.cloud_storage.dto.resource.ResourceFactory;
-import com.example.cloud_storage.dto.resource.ResourceInfo;
-import com.example.cloud_storage.dto.resource.ResourceType;
 import com.example.cloud_storage.dto.resource.response.ResourceResponse;
-import com.example.cloud_storage.exception.resource.ResourceAlreadyExistsException;
-import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
-import com.example.cloud_storage.exception.resource.BadRequestException;
+import com.example.cloud_storage.exception.resource.*;
 import com.example.cloud_storage.mapper.ResourceMapper;
-import com.example.cloud_storage.repository.S3Repository;
+import com.example.cloud_storage.repository.resource.S3Repository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static com.example.cloud_storage.constant.ExceptionMessages.*;
 
 @Slf4j
 @Service
@@ -34,7 +32,7 @@ public class DirectoryService {
 
     public ResourceResponse getInfo(Resource resource){
         if(!s3Repository.exists(resource.fullPath())){
-            throw new ResourceNotFoundException("Такой папки нет");
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND);
         }
 
         return resourceMapper.toResponseDto(resource, null);
@@ -49,7 +47,7 @@ public class DirectoryService {
             return getInfo(resource);
         }
         else{
-            throw new ResourceAlreadyExistsException("Такая папка уже существует");
+            throw new ResourceAlreadyExistsException(RESOURCE_ALREADY_EXISTS);
         }
     }
 
@@ -59,22 +57,18 @@ public class DirectoryService {
             s3Repository.createDirectory(fullPath);
         }
         else{
-            throw new ResourceAlreadyExistsException("Такая папка уже существует");
+            throw new ResourceAlreadyExistsException(RESOURCE_ALREADY_EXISTS);
         }
     }
 
     public List<ResourceResponse> getDirectoryContents(String path) {
-        String normalized = (path == null ? "" : path);
-        if (!normalized.isEmpty() && !normalized.endsWith("/")) {
-            normalized += "/";
-        }
-        String fullPath = pathService.getFullPath(normalized);
+        String fullPath = pathService.getFullPath(path);
 
         if (!isDirectoryExists(fullPath)) {
-            throw new ResourceNotFoundException("Папка не найдена: " + path);
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND + " " + path);
         }
         if (!fullPath.endsWith("/")) {
-            throw new BadRequestException("Указанный путь не является папкой: " + path);
+            throw new BadRequestException(BAD_REQUEST + " " + path);
         }
 
         List<String> items = s3Repository.listDirectory(fullPath);
@@ -92,7 +86,6 @@ public class DirectoryService {
     }
 
     private boolean isDirectoryExists(String fullPath) {
-        if (!fullPath.endsWith("/")) fullPath += "/";
         if (s3Repository.exists(fullPath)) return true;
         List<String> children = s3Repository.listDirectory(fullPath);
         return !children.isEmpty();
@@ -111,7 +104,7 @@ public class DirectoryService {
                     zipOut.closeEntry();
                 }
             } catch (IOException e) {
-                throw new RuntimeException("Failed to create zip", e);
+                throw new ServerIOException(SERVER_IO_ERROR, e);
             }
         };
     }
@@ -119,7 +112,7 @@ public class DirectoryService {
     public void delete(String fullPath) {
         if (!s3Repository.exists(fullPath) &&
                 s3Repository.listDirectory(fullPath).isEmpty()) {
-            throw new ResourceNotFoundException("Папка не найдена: " + fullPath);
+            throw new ResourceNotFoundException(RESOURCE_NOT_FOUND + " " + fullPath);
         }
 
         List<String> paths = s3Repository.listDirectoryRecursive(fullPath);
@@ -163,7 +156,8 @@ public class DirectoryService {
                 String newPath = oldPath.replace(fullFromPath, fullToPath);
                 s3Repository.delete(newPath);
             }
-            throw new RuntimeException("Move failed, rolled back", e);
+
+            throw new MoveOperationException(MOVE_OPERATION_EXCEPTION, e);
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.cloud_storage.repository;
+package com.example.cloud_storage.repository.resource;
 
 import com.example.cloud_storage.dto.resource.ResourceInfo;
 import org.springframework.web.multipart.MultipartFile;

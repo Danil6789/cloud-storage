@@ -1,8 +1,8 @@
-package com.example.cloud_storage.repository.impl;
+package com.example.cloud_storage.repository.resource.impl;
 
 import com.example.cloud_storage.exception.resource.ResourceNotFoundException;
 import com.example.cloud_storage.exception.resource.S3OperationException;
-import com.example.cloud_storage.repository.S3Repository;
+import com.example.cloud_storage.repository.resource.S3Repository;
 import com.example.cloud_storage.dto.resource.ResourceInfo;
 import com.example.cloud_storage.exception.resource.ServerIOException;
 
@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.cloud_storage.constant.ExceptionMessages.*;
 
 @Slf4j
 @Service
@@ -41,9 +43,9 @@ public class MinioRepository implements S3Repository {
                             .build()
             );
         } catch (MinioException e) {
-            throw new S3OperationException("Failed to upload file", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }catch(Exception e){
-            throw new ServerIOException("Unexpected error during upload", e);
+            throw new ServerIOException(SERVER_IO_ERROR, e);
         }
     }
 
@@ -59,11 +61,11 @@ public class MinioRepository implements S3Repository {
             return stream;
         } catch (ErrorResponseException e) {
             if ("NoSuchKey".equals(e.errorResponse().code())) {
-                throw new ResourceNotFoundException("File not found: " + fullPath);
+                throw new ResourceNotFoundException(RESOURCE_NOT_FOUND + " " + fullPath);
             }
-            throw new S3OperationException("Failed to download file", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         } catch (Exception e) {
-            throw new S3OperationException("Failed to download file", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
     }
 
@@ -77,7 +79,7 @@ public class MinioRepository implements S3Repository {
                             .build()
             );
         } catch (Exception e) {
-            throw new S3OperationException("Failed to delete resource", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
     }
 
@@ -95,7 +97,7 @@ public class MinioRepository implements S3Repository {
                             .build()
             );
         } catch (Exception e) {
-            throw new S3OperationException("Failed to move resource", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
     }
 
@@ -118,7 +120,7 @@ public class MinioRepository implements S3Repository {
             }
             return objects;
         } catch (Exception e) {
-            throw new S3OperationException("Failed to list directory", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
     }
 
@@ -155,7 +157,7 @@ public class MinioRepository implements S3Repository {
                             .build()
             );
         } catch (Exception e) {
-            throw new S3OperationException("Failed to create folder", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
     }
 
@@ -171,7 +173,7 @@ public class MinioRepository implements S3Repository {
             return stat.size();
         } catch (Exception e) {
             log.error("Failed to get file size: {}", fullPath, e);
-            throw new S3OperationException("Failed to get file size", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
     }
 
@@ -184,7 +186,7 @@ public class MinioRepository implements S3Repository {
                 objects.add(item.objectName());
             }
         } catch (Exception e) {
-            throw new S3OperationException("Failed to list directory recursively", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
         return objects;
     }
@@ -199,7 +201,7 @@ public class MinioRepository implements S3Repository {
                 objects.add(new ResourceInfo(relativePath, item.size()));
             }
         } catch (Exception e) {
-            throw new S3OperationException("Failed to list objects recursively", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
         return objects;
     }
@@ -214,7 +216,7 @@ public class MinioRepository implements S3Repository {
                             .build()
             );
         } catch (Exception e) {
-            throw new S3OperationException("Failed to list objects", e);
+            throw new S3OperationException(S3_OPERATION_ERROR, e);
         }
     }
 }

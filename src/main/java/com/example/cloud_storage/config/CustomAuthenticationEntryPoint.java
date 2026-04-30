@@ -1,6 +1,6 @@
 package com.example.cloud_storage.config;
 
-import com.example.cloud_storage.dto.ErrorResponse;
+import com.example.cloud_storage.dto.error.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

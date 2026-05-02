@@ -16,10 +16,12 @@ spring:
     redis:
       namespace: spring:session
       flush-mode: on-save
+
 springdoc:
   swagger-ui:
     persist-authorization: true
     with-credentials: true
+
 server:
   servlet:
     session:
@@ -28,3 +30,6 @@ server:
         http-only: true
         same-site: lax
         secure: false
+
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:8080}

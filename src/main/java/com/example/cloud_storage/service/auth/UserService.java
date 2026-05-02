@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.example.cloud_storage.constant.ExceptionMessages.USER_ALREADY_EXISTS;
+import static com.example.cloud_storage.constant.ExceptionMessages.USER_NOT_FOUND;
 
 //TODO: реализовать через контстанту сообщение об ошибке - import static ru.masnaviev.cloudstorage.constants.ErrorMessages.USER_ALREADY_EXISTS;
 
@@ -34,6 +35,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("Нет такого username")); //TODO: Вынести сообщение в константу
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND)); //TODO: Вынести сообщение в константу
     }
 }

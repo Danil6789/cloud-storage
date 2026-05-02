@@ -45,6 +45,5 @@ server:
         secure: false #TODO: потом поменять на true если хочу делать https
 
 
-cors:
-  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:8080}
+
 

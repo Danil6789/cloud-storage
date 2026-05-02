@@ -76,7 +76,7 @@ public class ResourceController implements ResourceApi {
     @Override
     public ResponseEntity<List<ResourceResponse>> uploadResources(
             @RequestParam @ValidPath String path,
-            @RequestPart("files") MultipartFile[] files) {
+            @RequestPart("object") MultipartFile[] files) {
 
         if (files == null || files.length == 0) {
             throw new IllegalArgumentException("No files to upload");

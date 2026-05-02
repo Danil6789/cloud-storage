@@ -97,7 +97,7 @@ public interface ResourceApi {
     })
     ResponseEntity<List<ResourceResponse>> uploadResources(
             @RequestParam @ValidPath String path,
-            @RequestPart("files")
+            @RequestPart("object")
             @Parameter(description = "Файлы для загрузки",
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
                             schema = @Schema(type = "string", format = "binary")))

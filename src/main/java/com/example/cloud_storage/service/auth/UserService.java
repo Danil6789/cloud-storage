@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import static com.example.cloud_storage.constant.ExceptionMessages.USER_ALREADY_EXISTS;
 import static com.example.cloud_storage.constant.ExceptionMessages.USER_NOT_FOUND;
 
-//TODO: реализовать через контстанту сообщение об ошибке - import static ru.masnaviev.cloudstorage.constants.ErrorMessages.USER_ALREADY_EXISTS;
 
 @Service
 @RequiredArgsConstructor
@@ -28,13 +27,13 @@ public class UserService {
             return userRepository.save(user);
 
         }catch(DataIntegrityViolationException e){
-            throw new UserAlreadyExistsException(USER_ALREADY_EXISTS); //TODO: Вынести сообщение в константу
+            throw new UserAlreadyExistsException(USER_ALREADY_EXISTS);
         }
     }
 
     @Transactional(readOnly = true)
     public User getUserByUsername(String username){
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND)); //TODO: Вынести сообщение в константу
+                .orElseThrow(() -> new UserNotFoundException(USER_NOT_FOUND));
     }
 }

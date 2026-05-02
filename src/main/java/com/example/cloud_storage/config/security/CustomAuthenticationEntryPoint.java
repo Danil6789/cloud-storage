@@ -1,4 +1,4 @@
-package com.example.cloud_storage.config;
+package com.example.cloud_storage.config.security;
 
 import com.example.cloud_storage.dto.error.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;

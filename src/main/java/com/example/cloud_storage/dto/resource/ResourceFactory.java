@@ -16,7 +16,6 @@ public class ResourceFactory {
         String name = pathService.extractName(path);
         String parentPath = pathService.extractParentPath(path);
         String fullPath = pathService.getFullPath(path);
-        //String relativePath = PathUtil.getRelativePath(fullPath, parentPath); //TODO: Пока ещё не совсем понятно для чего
         ResourceType type = path.endsWith("/") ? DIRECTORY : FILE;
 
         return new Resource(name, parentPath, fullPath, type);

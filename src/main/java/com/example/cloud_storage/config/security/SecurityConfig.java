@@ -1,4 +1,4 @@
-package com.example.cloud_storage.config;
+package com.example.cloud_storage.config.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
